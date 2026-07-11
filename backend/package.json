@@ -1,5 +1,5 @@
 {
-  "name": "Froyal Amity-Store-backend",
+  "name": "FroyalAmity-Store-backend",
   "version": "1.0.0",
   "type": "module",
   "main": "src/server.js",
