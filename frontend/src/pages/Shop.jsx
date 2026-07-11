@@ -45,7 +45,7 @@ const Shop = () => {
           ))}
         </div>
       </div>
-      <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-6 grid grid-cols-2 gap-2 sm:mt-8 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 lg:gap-6">
         {filteredProducts.map((product) => (
           <ProductCard key={product._id} product={product} />
         ))}

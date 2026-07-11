@@ -60,7 +60,7 @@ const Home = () => {
 
       <section className="mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
         <SectionHeader eyebrow="Featured" title="Quiet luxury, ready to ship" text="Explore customer favorites chosen for texture, utility, and lasting style." />
-        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-6 grid grid-cols-2 gap-2 sm:mt-10 sm:gap-6 lg:grid-cols-3">
           {featured.map((product) => (
             <ProductCard key={product._id} product={product} />
           ))}
