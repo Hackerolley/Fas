@@ -1,4 +1,25 @@
 import Product from "../models/Product.js";
+import Category from "../models/Category.js";
+
+const slugify = (value) => value
+  .toLowerCase()
+  .trim()
+  .replace(/[^a-z0-9]+/g, "-")
+  .replace(/(^-|-$)/g, "");
+
+// Keeps human-readable slugs unique when products share the same name.
+const getUniqueSlug = async (requestedSlug, name) => {
+  const baseSlug = slugify(requestedSlug || name) || `product-${Date.now()}`;
+  let slug = baseSlug;
+  let suffix = 2;
+
+  while (await Product.exists({ slug })) {
+    slug = `${baseSlug}-${suffix}`;
+    suffix += 1;
+  }
+
+  return slug;
+};
 
 // Builds a reusable MongoDB filter from storefront query parameters.
 const buildProductFilter = (query) => {
@@ -60,7 +81,15 @@ export const getProductByIdOrSlug = async (req, res, next) => {
 // Creates a product from the admin dashboard.
 export const createProduct = async (req, res, next) => {
   try {
-    const product = await Product.create(req.body);
+    const category = await Category.findOne({ name: req.body.category, active: true });
+    if (!category) {
+      res.status(400);
+      throw new Error("Select a valid active category.");
+    }
+    const product = await Product.create({
+      ...req.body,
+      slug: await getUniqueSlug(req.body.slug, req.body.name)
+    });
     res.status(201).json(product);
   } catch (error) {
     next(error);

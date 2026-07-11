@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ShoppingBag, Star } from "lucide-react";
+import { Check, ShoppingBag, Star } from "lucide-react";
 import Button from "./Button";
 import { useCart } from "../context/CartContext";
 
@@ -7,6 +8,13 @@ import { useCart } from "../context/CartContext";
 const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
   const image = product.images?.[0]?.url;
+  const [wasAdded, setWasAdded] = useState(false);
+
+  const handleAddToCart = () => {
+    addToCart(product);
+    setWasAdded(true);
+    window.setTimeout(() => setWasAdded(false), 1600);
+  };
 
   return (
     <article className="group overflow-hidden rounded-lg bg-white shadow-soft ring-1 ring-black/5">
@@ -32,8 +40,8 @@ const ProductCard = ({ product }) => {
             <span className="text-lg font-extrabold">${product.price}</span>
             {product.compareAtPrice > 0 && <span className="ml-2 text-sm text-ink/40 line-through">${product.compareAtPrice}</span>}
           </div>
-          <Button className="h-10 w-10 rounded-full px-0" aria-label={`Add ${product.name} to cart`} onClick={() => addToCart(product)}>
-            <ShoppingBag size={18} />
+          <Button disabled={product.countInStock === 0} className="h-10 gap-2 rounded-full px-4" aria-label={`Add ${product.name} to cart`} onClick={handleAddToCart}>
+            {wasAdded ? <><Check size={18} /> Added</> : <><ShoppingBag size={18} /> Add</>}
           </Button>
         </div>
       </div>

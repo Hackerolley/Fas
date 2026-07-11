@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { v2 as cloudinary } from "cloudinary";
 
 // Central Cloudinary configuration. Add your credentials to backend/.env later.

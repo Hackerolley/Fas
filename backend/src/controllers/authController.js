@@ -25,7 +25,15 @@ export const registerUser = async (req, res, next) => {
     }
 
     const user = await User.create({ name, email, password });
-    sendAuthResponse(res, user, 201);
+    res.status(201).json({
+      success: true,
+      message: "User registered successfully.",
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      avatar: user.avatar,
+      token: generateToken(user._id)
+    });
   } catch (error) {
     next(error);
   }
