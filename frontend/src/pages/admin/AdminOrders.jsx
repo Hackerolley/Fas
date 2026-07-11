@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import AdminNav from "./AdminNav";
 import api from "../../api/axios";
 
@@ -83,7 +84,7 @@ const AdminOrders = () => {
       <div className="thin-scrollbar mt-8 overflow-x-auto rounded-lg bg-white shadow-soft ring-1 ring-black/5">
 
 
-        <table className="w-full min-w-[900px] text-left text-sm">
+        <table className="w-full min-w-[1000px] text-left text-sm">
 
 
           <thead className="bg-pearl text-ink/60">
@@ -112,6 +113,10 @@ const AdminOrders = () => {
 
               <th>
                 Date
+              </th>
+
+              <th>
+                Action
               </th>
 
             </tr>
@@ -159,9 +164,17 @@ const AdminOrders = () => {
 
                 <td>
 
-                  {order.isPaid
-                    ? "Paid"
-                    : "Pending"}
+                  <span className={
+                    order.isPaid
+                    ? "text-green-600"
+                    : "text-gray-500"
+                  }>
+
+                    {order.isPaid
+                      ? "Paid"
+                      : "Pending"}
+
+                  </span>
 
                 </td>
 
@@ -179,6 +192,33 @@ const AdminOrders = () => {
 
                   {new Date(order.createdAt)
                     .toLocaleDateString()}
+
+                </td>
+
+
+
+                <td>
+
+
+                  <Link
+                    to={`/admin/orders/${order._id}`}
+                    className="
+                      rounded-md
+                      bg-black
+                      px-3
+                      py-2
+                      text-xs
+                      font-semibold
+                      text-white
+                      transition
+                      hover:bg-gray-800
+                    "
+                  >
+
+                    View
+
+                  </Link>
+
 
                 </td>
 
