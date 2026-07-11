@@ -43,8 +43,12 @@ app.use(
 );
 
 // Health route for deployment platforms and quick local checks.
-app.get("/api/", (req, res) => {
-  res.json({ status: "ok", service: "Froyal Amity-Store-api" });
+app.get("/api/health", (req, res) => {
+  res.json({ 
+    status: "ok", 
+    service: "Froyal Amity-Store-api",
+    message: "The API is running and ready to serve requests."
+  });
 });
 
 // Versioned API routes grouped by feature.
