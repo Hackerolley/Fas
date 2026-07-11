@@ -31,7 +31,7 @@ npm run dev
 
 ## Default URLs
 
-- Frontend: `http://localhost:5173`
+- Frontend: `https://froyalamitystore-nu.vercel.app`
 - Backend API: `http://localhost:5000/api`
 
 ## Notes
