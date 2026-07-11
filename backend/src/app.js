@@ -61,6 +61,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/uploads", uploadRoutes);
 app.use("/api/admin", adminRoutes);
 
+
 // Error middleware must sit after routes so it can catch route failures.
 app.get("/", (req, res) => {
   res.json({

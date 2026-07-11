@@ -1,33 +1,210 @@
+import { useEffect, useState } from "react";
 import AdminNav from "./AdminNav";
+import api from "../../api/axios";
 
-// Admin orders page displays a responsive fulfillment table.
+
+// Admin orders page displays real database orders.
 const AdminOrders = () => {
-  const orders = [
-    ["LC-1042", "Amara Stone", "$248.00", "Paid", "Processing"],
-    ["LC-1041", "Milan Cross", "$476.00", "Paid", "Shipped"],
-    ["LC-1040", "June Carter", "$86.00", "Pending", "Processing"]
-  ];
+
+  const [orders, setOrders] = useState([]);
+
+  const [loading, setLoading] = useState(true);
+
+
+
+  useEffect(() => {
+
+    const fetchOrders = async () => {
+
+      try {
+
+        const { data } = await api.get("/admin/orders");
+
+        setOrders(data);
+
+
+      } catch (error) {
+
+        console.error(
+          "Failed to fetch orders:",
+          error
+        );
+
+      } finally {
+
+        setLoading(false);
+
+      }
+
+    };
+
+
+    fetchOrders();
+
+
+  }, []);
+
+
+
+  if (loading) {
+
+    return (
+
+      <section className="mx-auto max-w-7xl px-4 py-12">
+
+        <AdminNav />
+
+        <p className="mt-8 text-sm text-gray-500">
+          Loading orders...
+        </p>
+
+      </section>
+
+    );
+
+  }
+
+
 
   return (
+
     <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+
+
       <AdminNav />
-      <h1 className="text-4xl font-extrabold">Orders</h1>
+
+
+      <h1 className="text-4xl font-extrabold">
+        Orders
+      </h1>
+
+
+
       <div className="thin-scrollbar mt-8 overflow-x-auto rounded-lg bg-white shadow-soft ring-1 ring-black/5">
-        <table className="w-full min-w-[760px] text-left text-sm">
+
+
+        <table className="w-full min-w-[900px] text-left text-sm">
+
+
           <thead className="bg-pearl text-ink/60">
-            <tr><th className="p-4">Order</th><th>Customer</th><th>Total</th><th>Payment</th><th>Fulfillment</th></tr>
+
+            <tr>
+
+              <th className="p-4">
+                Order
+              </th>
+
+              <th>
+                Customer
+              </th>
+
+              <th>
+                Total
+              </th>
+
+              <th>
+                Payment
+              </th>
+
+              <th>
+                Status
+              </th>
+
+              <th>
+                Date
+              </th>
+
+            </tr>
+
           </thead>
+
+
+
           <tbody>
-            {orders.map((order) => (
-              <tr key={order[0]} className="border-t border-linen">
-                {order.map((cell) => <td key={cell} className="p-4">{cell}</td>)}
+
+
+            {orders.map((order)=>(
+
+
+              <tr
+                key={order._id}
+                className="border-t border-linen"
+              >
+
+
+                <td className="p-4 font-medium">
+
+                  #{order._id.slice(-6)}
+
+                </td>
+
+
+
+                <td>
+
+                  {order.user?.name ||
+                  order.shippingAddress?.fullName}
+
+                </td>
+
+
+
+                <td>
+
+                  ₦{order.totalPrice.toLocaleString()}
+
+                </td>
+
+
+
+                <td>
+
+                  {order.isPaid
+                    ? "Paid"
+                    : "Pending"}
+
+                </td>
+
+
+
+                <td className="capitalize">
+
+                  {order.status}
+
+                </td>
+
+
+
+                <td>
+
+                  {new Date(order.createdAt)
+                    .toLocaleDateString()}
+
+                </td>
+
+
+
               </tr>
+
+
             ))}
+
+
+
           </tbody>
+
+
         </table>
+
+
       </div>
+
+
     </section>
+
   );
+
 };
+
 
 export default AdminOrders;
