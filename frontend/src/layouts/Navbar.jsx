@@ -12,7 +12,8 @@ const Navbar = () => {
   const links = [
     ["Shop", "/shop"],
     ["About", "/about"],
-    ["Admin", "/admin"]
+    ["Admin", "/admin"],
+    ["Home", "/"]
   ];
 
   return (
