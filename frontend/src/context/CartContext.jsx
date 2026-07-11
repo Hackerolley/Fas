@@ -4,12 +4,12 @@ import { createContext, useContext, useMemo, useState } from "react";
 const CartContext = createContext(null);
 
 export const CartProvider = ({ children }) => {
-  const [items, setItems] = useState(() => JSON.parse(localStorage.getItem("luxeCart") || "[]"));
+  const [items, setItems] = useState(() => JSON.parse(localStorage.getItem("Froyal AmityCart") || "[]"));
 
   // Persist the cart any time an update function changes it.
   const saveItems = (nextItems) => {
     setItems(nextItems);
-    localStorage.setItem("luxeCart", JSON.stringify(nextItems));
+    localStorage.setItem("Froyal AmityCart", JSON.stringify(nextItems));
   };
 
   // Adds a product or increases its quantity.

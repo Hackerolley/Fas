@@ -1,8 +1,8 @@
 {
-  "name": "luxe-commerce",
+  "name": "Froyal Amity-Store",
   "version": "1.0.0",
   "private": true,
-  "description": "Full-stack MERN ecommerce website with React, Tailwind CSS, Express, MongoDB, and admin dashboard.",
+  "description": "Full-stack MERN eStore website with React, Tailwind CSS, Express, MongoDB, and admin dashboard.",
   "scripts": {
     "install:all": "npm install --prefix backend && npm install --prefix frontend",
     "dev": "concurrently \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",

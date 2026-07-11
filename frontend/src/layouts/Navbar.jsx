@@ -19,7 +19,7 @@ const Navbar = () => {
     <header className="sticky top-0 z-40 border-b border-ink/10 bg-pearl/90 backdrop-blur">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
         <Link to="/" className="text-xl font-extrabold tracking-normal text-ink">
-          Luxe Commerce
+          Froyal Amity Store
         </Link>
         <div className="hidden items-center gap-7 md:flex">
           {links.map(([label, path]) => (

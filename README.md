@@ -1,6 +1,6 @@
-# Luxe Commerce
+# Froyal Amity Store
 
-A complete full-stack ecommerce starter built with Node.js, Express, MongoDB, React, Axios, and Tailwind CSS. It includes product browsing, cart flow, checkout UI, authentication pages, user orders, and an admin dashboard.
+A complete full-stack eStore starter built with Node.js, Express, MongoDB, React, Axios, and Tailwind CSS. It includes product browsing, cart flow, checkout UI, authentication pages, user orders, and an admin dashboard.
 
 ## Project Structure
 

@@ -1,5 +1,5 @@
 {
-  "name": "luxe-commerce-backend",
+  "name": "Froyal Amity-Store-backend",
   "version": "1.0.0",
   "type": "module",
   "main": "src/server.js",
@@ -17,7 +17,7 @@
     "express-rate-limit": "^7.4.1",
     "helmet": "^8.0.0",
     "jsonwebtoken": "^9.0.2",
-    "luxe-commerce": "file:..",
+    "Froyal Amity-Store": "file:..",
     "mongoose": "^8.8.1",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1"

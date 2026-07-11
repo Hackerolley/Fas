@@ -12,7 +12,7 @@ export const uploadImage = async (req, res, next) => {
     const fileBase64 = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
 
     const result = await cloudinary.uploader.upload(fileBase64, {
-      folder: "luxe-commerce/products"
+      folder: "Froyal Amity-Store/products"
     });
 
     res.status(201).json({

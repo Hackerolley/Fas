@@ -5,12 +5,12 @@ import api from "../api/axios";
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => JSON.parse(localStorage.getItem("luxeUser") || "null"));
+  const [user, setUser] = useState(() => JSON.parse(localStorage.getItem("Froyal AmityUser") || "null"));
 
   // Saves authenticated user data and token locally.
   const persistUser = (userData) => {
     setUser(userData);
-    localStorage.setItem("luxeUser", JSON.stringify(userData));
+    localStorage.setItem("Froyal AmityUser", JSON.stringify(userData));
   };
 
   // Calls backend login and stores the returned token.
@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }) => {
   // Clears the local session.
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("luxeUser");
+    localStorage.removeItem("Froyal AmityUser");
   };
 
   return <AuthContext.Provider value={{ user, login, register, logout }}>{children}</AuthContext.Provider>;

@@ -22,7 +22,7 @@ const Home = () => {
         <div className="relative mx-auto flex min-h-[76vh] max-w-7xl items-end px-4 pb-14 pt-24 sm:px-6 lg:px-8">
           <div className="max-w-2xl">
             <p className="text-sm font-bold uppercase tracking-wide text-linen">New season edit</p>
-            <h1 className="mt-4 text-5xl font-extrabold tracking-normal sm:text-7xl">Luxe Commerce</h1>
+            <h1 className="mt-4 text-5xl font-extrabold tracking-normal sm:text-7xl">Froyal Amity Store</h1>
             <p className="mt-5 max-w-xl text-lg leading-8 text-white/80">
               Curated fashion, refined accessories, and home pieces designed for calm, beautiful living.
             </p>

@@ -11,6 +11,6 @@ const PORT = process.env.PORT || 5000;
 // Connect to MongoDB first so the API does not accept traffic before storage is ready.
 connectDB().then(() => {
   app.listen(PORT, () => {
-    console.log(`Luxe Commerce API running on port ${PORT}`);
+    console.log(`Froyal Amity Store API running on port ${PORT}`);
   });
 });

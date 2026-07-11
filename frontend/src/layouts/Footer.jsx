@@ -1,11 +1,11 @@
-// Footer keeps commerce trust signals visible without taking over the page.
+// Footer keeps Store trust signals visible without taking over the page.
 const Footer = () => (
   <footer className="border-t border-ink/10 bg-white">
     <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 md:grid-cols-4 lg:px-8">
       <div className="md:col-span-2">
-        <p className="text-lg font-extrabold">Luxe Commerce</p>
+        <p className="text-lg font-extrabold">Froyal Amity Store</p>
         <p className="mt-3 max-w-md text-sm leading-6 text-ink/60">
-          A modern ecommerce experience for curated fashion, accessories, and home essentials.
+          A modern eStore experience for curated fashion, accessories, and home essentials.
         </p>
       </div>
       <div>

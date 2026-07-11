@@ -1,5 +1,5 @@
 {
-  "name": "luxe-commerce-frontend",
+  "name": "Froyal Amity-Store-frontend",
   "version": "1.0.0",
   "type": "module",
   "private": true,
@@ -12,7 +12,7 @@
     "@vitejs/plugin-react": "^4.3.3",
     "axios": "^1.7.7",
     "lucide-react": "^0.468.0",
-    "luxe-commerce": "file:..",
+    "Froyal Amity-Store": "file:..",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.28.0"
