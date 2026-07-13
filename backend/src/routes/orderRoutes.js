@@ -15,7 +15,8 @@ const router = express.Router();
 router.route("/").post(protect, createOrder).get(protect, admin, getOrders);
 router.get("/mine", protect, getMyOrders);
 router.route("/:id").get(protect, getOrderById);
-router.put("/:id/pay", protect, updateOrderToPaid);
+// A payment provider webhook should replace this route before taking live payments.
+router.put("/:id/pay", protect, admin, updateOrderToPaid);
 router.put("/:id/deliver", protect, admin, updateOrderToDelivered);
 
 export default router;

@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("Froyal AmityUser");
   };
 
-  return <AuthContext.Provider value={{ user, login, register, logout }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ user, login, register, logout, persistUser }}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => useContext(AuthContext);

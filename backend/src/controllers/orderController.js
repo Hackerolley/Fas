@@ -1,4 +1,7 @@
 import Order from "../models/Order.js";
+import Product from "../models/Product.js";
+import User from "../models/User.js";
+import { notifyOrderStatus } from "../utils/notifications.js";
 
 // Creates an order from cart and checkout details.
 export const createOrder = async (req, res, next) => {
@@ -6,11 +9,7 @@ export const createOrder = async (req, res, next) => {
     const {
       orderItems,
       shippingAddress,
-      paymentMethod,
-      itemsPrice,
-      taxPrice,
-      shippingPrice,
-      totalPrice
+      paymentMethod
     } = req.body;
 
     if (!orderItems || orderItems.length === 0) {
@@ -18,16 +17,33 @@ export const createOrder = async (req, res, next) => {
       throw new Error("No order items provided.");
     }
 
+    // Rebuild prices from the catalogue so a browser cannot alter totals.
+    const productIds = orderItems.map((item) => item.product);
+    const products = await Product.find({ _id: { $in: productIds } });
+    const productById = new Map(products.map((product) => [product._id.toString(), product]));
+    const verifiedItems = orderItems.map((item) => {
+      const product = productById.get(item.product);
+      const qty = Number(item.qty);
+      if (!product || !Number.isInteger(qty) || qty < 1 || product.countInStock < qty) throw new Error("One or more products are unavailable in the requested quantity.");
+      return { product: product._id, name: product.name, qty, image: product.images?.[0]?.url || "", price: product.price };
+    });
+    const computedItemsPrice = verifiedItems.reduce((sum, item) => sum + item.price * item.qty, 0);
+    const computedShippingPrice = computedItemsPrice > 150 ? 0 : 12;
+    const computedTaxPrice = computedItemsPrice * 0.08;
+
     const order = await Order.create({
       user: req.user._id,
-      orderItems,
+      orderItems: verifiedItems,
       shippingAddress,
       paymentMethod,
-      itemsPrice,
-      taxPrice,
-      shippingPrice,
-      totalPrice
+      itemsPrice: computedItemsPrice,
+      taxPrice: computedTaxPrice,
+      shippingPrice: computedShippingPrice,
+      totalPrice: computedItemsPrice + computedTaxPrice + computedShippingPrice
     });
+
+    // Save the latest checkout address as a convenient default for the next purchase.
+    await User.findByIdAndUpdate(req.user._id, { shippingAddress });
 
     res.status(201).json(order);
   } catch (error) {
@@ -120,4 +136,21 @@ export const updateOrderToDelivered = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};
+
+// Updates fulfillment state and sends opted-in customer notifications.
+export const updateOrderStatus = async (req, res, next) => {
+  try {
+    const { status } = req.body;
+    const allowed = ["processing", "paid", "shipped", "delivered", "cancelled"];
+    if (!allowed.includes(status)) { res.status(400); throw new Error("Invalid order status."); }
+    const order = await Order.findById(req.params.id).populate("user", "name email notificationPreferences");
+    if (!order) { res.status(404); throw new Error("Order not found."); }
+    order.status = status;
+    if (status === "paid" && !order.isPaid) { order.isPaid = true; order.paidAt = Date.now(); }
+    if (status === "delivered" && !order.isDelivered) { order.isDelivered = true; order.deliveredAt = Date.now(); }
+    const updatedOrder = await order.save();
+    notifyOrderStatus(order);
+    res.json(updatedOrder);
+  } catch (error) { next(error); }
 };

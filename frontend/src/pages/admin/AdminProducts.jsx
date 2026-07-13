@@ -13,6 +13,7 @@ const emptyProduct = {
   price: "",
   countInStock: "0",
   featured: false
+  ,status: "active"
 };
 
 // Admin products page lets administrators create products using the protected API.
@@ -39,8 +40,8 @@ const AdminProducts = () => {
   }, []);
 
   useEffect(() => {
-    api.get("/products")
-      .then(({ data }) => setProducts(data.products || data))
+    api.get("/products/admin/all")
+      .then(({ data }) => setProducts(data))
       .catch(() => setProductsError("Could not load products from the database."))
       .finally(() => setIsProductsLoading(false));
   }, []);
@@ -74,7 +75,8 @@ const AdminProducts = () => {
       description: product.description,
       price: String(product.price),
       countInStock: String(product.countInStock),
-      featured: Boolean(product.featured)
+      featured: Boolean(product.featured),
+      status: product.status || "active"
     });
     setIsModalOpen(true);
   };
@@ -164,7 +166,7 @@ const AdminProducts = () => {
                 <td>{product.category}</td>
                 <td>${product.price}</td>
                 <td>{product.countInStock}</td>
-                <td><span className="rounded-full bg-pearl px-3 py-1 text-xs font-bold text-moss">{product.featured ? "Featured" : "Active"}</span></td>
+                <td><span className={`rounded-full px-3 py-1 text-xs font-bold ${product.status === "archived" ? "bg-red-50 text-red-700" : product.status === "draft" ? "bg-pearl text-ink/60" : "bg-green-50 text-moss"}`}>{product.status || "active"}</span></td>
                 <td className="p-4"><div className="flex justify-end gap-2"><button type="button" onClick={() => openEditModal(product)} className="rounded-full px-3 py-1.5 text-xs font-bold text-ink ring-1 ring-linen hover:bg-pearl">Edit</button><button type="button" disabled={deletingProductId === product._id} onClick={() => handleDelete(product)} className="rounded-full px-3 py-1.5 text-xs font-bold text-red-700 ring-1 ring-red-200 hover:bg-red-50 disabled:opacity-60">{deletingProductId === product._id ? "Deleting…" : "Delete"}</button></div></td>
               </tr>
             ))}
@@ -188,6 +190,7 @@ const AdminProducts = () => {
               <label className="text-sm font-semibold sm:col-span-2">{editingProduct ? "Replace product images" : "Product images"}<input required={!editingProduct} multiple type="file" accept="image/*" onChange={(event) => setImageFiles(Array.from(event.target.files || []))} className="mt-1 block w-full text-sm font-normal file:mr-4 file:rounded-full file:border-0 file:bg-pearl file:px-4 file:py-2 file:font-semibold file:text-ink" />{imageFiles.length > 0 ? <span className="mt-1 block font-normal text-ink/60">{imageFiles.length} image{imageFiles.length === 1 ? "" : "s"} selected</span> : editingProduct && <span className="mt-1 block font-normal text-ink/60">Leave empty to keep the current images.</span>}</label>
               <label className="text-sm font-semibold sm:col-span-2">Description<textarea required name="description" value={form.description} onChange={handleChange} rows="3" className="mt-1 w-full rounded-lg border border-linen px-3 py-2 font-normal" /></label>
               <label className="flex items-center gap-2 text-sm font-semibold sm:col-span-2"><input type="checkbox" name="featured" checked={form.featured} onChange={handleChange} /> Feature this product</label>
+              <label className="text-sm font-semibold sm:col-span-2">Catalogue status<select name="status" value={form.status} onChange={handleChange} className="mt-1 w-full rounded-lg border border-linen px-3 py-2 font-normal"><option value="active">Active — visible to shoppers</option><option value="draft">Draft — hidden from shoppers</option><option value="archived">Archived — hidden from shoppers</option></select></label>
             </div>
             {error && <p className="mt-4 text-sm font-medium text-red-700" role="alert">{error}</p>}
             <div className="mt-6 flex justify-end gap-3"><Button type="button" variant="secondary" onClick={closeModal}>Cancel</Button><Button type="submit" disabled={isSaving}>{isSaving ? <><CircleLoader className="mr-2" label="Saving product" />Saving product</> : editingProduct ? "Save changes" : "Add product"}</Button></div>

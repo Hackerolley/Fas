@@ -12,6 +12,7 @@ const Navbar = () => {
   const links = [
     ["Shop", "/shop"],
     ["About", "/about"],
+    ["Blog", "/blog"],
     ["Admin", "/admin"],
     ["Home", "/"]
   ];

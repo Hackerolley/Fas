@@ -23,7 +23,7 @@ const getUniqueSlug = async (requestedSlug, name) => {
 
 // Builds a reusable MongoDB filter from storefront query parameters.
 const buildProductFilter = (query) => {
-  const filter = {};
+  const filter = { status: { $nin: ["draft", "archived"] } };
 
   if (query.keyword) {
     filter.$or = [
@@ -57,6 +57,11 @@ export const getProducts = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};
+
+// The dashboard must also be able to see unpublished catalogue entries.
+export const getAdminProducts = async (req, res, next) => {
+  try { res.json(await Product.find({}).sort("-createdAt")); } catch (error) { next(error); }
 };
 
 // Gets a single product by Mongo id or human-readable slug.

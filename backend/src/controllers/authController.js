@@ -9,6 +9,8 @@ const sendAuthResponse = (res, user, statusCode = 200) => {
     email: user.email,
     role: user.role,
     avatar: user.avatar,
+    shippingAddress: user.shippingAddress,
+    notificationPreferences: user.notificationPreferences,
     token: generateToken(user._id)
   });
 };
@@ -25,15 +27,7 @@ export const registerUser = async (req, res, next) => {
     }
 
     const user = await User.create({ name, email, password });
-    res.status(201).json({
-      success: true,
-      message: "User registered successfully.",
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      avatar: user.avatar,
-      token: generateToken(user._id)
-    });
+    sendAuthResponse(res, user, 201);
   } catch (error) {
     next(error);
   }
@@ -69,8 +63,15 @@ export const updateProfile = async (req, res, next) => {
     user.name = req.body.name || user.name;
     user.email = req.body.email || user.email;
     user.avatar = req.body.avatar || user.avatar;
+    if (req.body.shippingAddress) user.shippingAddress = { ...user.shippingAddress.toObject(), ...req.body.shippingAddress };
+    if (req.body.notificationPreferences) user.notificationPreferences = { ...user.notificationPreferences.toObject(), ...req.body.notificationPreferences };
 
+    // Require the existing password before changing credentials on an active session.
     if (req.body.password) {
+      if (!req.body.currentPassword || !(await user.matchPassword(req.body.currentPassword))) {
+        res.status(400);
+        throw new Error("Your current password is incorrect.");
+      }
       user.password = req.body.password;
     }
 

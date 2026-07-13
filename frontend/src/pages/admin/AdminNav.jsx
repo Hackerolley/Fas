@@ -7,6 +7,7 @@ const AdminNav = () => {
     ["Products", "/admin/products"],
     ["Orders", "/admin/orders"],
     ["Users", "/admin/users"]
+    ,["Blog", "/admin/blogs"]
   ];
 
   return (

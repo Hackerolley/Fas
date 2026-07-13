@@ -29,6 +29,20 @@ const userSchema = new mongoose.Schema(
     avatar: {
       type: String,
       default: ""
+    },
+    // The saved address is used to prefill checkout; an order keeps its own snapshot.
+    shippingAddress: {
+      fullName: { type: String, default: "" },
+      address: { type: String, default: "" },
+      city: { type: String, default: "" },
+      postalCode: { type: String, default: "" },
+      country: { type: String, default: "" },
+      phone: { type: String, default: "" }
+    },
+    notificationPreferences: {
+      email: { type: Boolean, default: true },
+      whatsapp: { type: Boolean, default: false },
+      whatsappNumber: { type: String, default: "" }
     }
   },
   { timestamps: true }
