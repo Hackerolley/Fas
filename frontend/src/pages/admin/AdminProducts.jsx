@@ -3,6 +3,7 @@ import AdminNav from "./AdminNav";
 import Button from "../../components/Button";
 import CircleLoader from "../../components/CircleLoader";
 import api from "../../api/axios";
+import { formatNaira } from "../../utils/currency";
 
 const emptyProduct = {
   name: "",
@@ -164,7 +165,7 @@ const AdminProducts = () => {
               <tr key={product._id} className="border-t border-linen">
                 <td className="p-4 font-bold">{product.name}</td>
                 <td>{product.category}</td>
-                <td>${product.price}</td>
+                <td>{formatNaira(product.price)}</td>
                 <td>{product.countInStock}</td>
                 <td><span className={`rounded-full px-3 py-1 text-xs font-bold ${product.status === "archived" ? "bg-red-50 text-red-700" : product.status === "draft" ? "bg-pearl text-ink/60" : "bg-green-50 text-moss"}`}>{product.status || "active"}</span></td>
                 <td className="p-4"><div className="flex justify-end gap-2"><button type="button" onClick={() => openEditModal(product)} className="rounded-full px-3 py-1.5 text-xs font-bold text-ink ring-1 ring-linen hover:bg-pearl">Edit</button><button type="button" disabled={deletingProductId === product._id} onClick={() => handleDelete(product)} className="rounded-full px-3 py-1.5 text-xs font-bold text-red-700 ring-1 ring-red-200 hover:bg-red-50 disabled:opacity-60">{deletingProductId === product._id ? "Deleting…" : "Delete"}</button></div></td>

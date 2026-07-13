@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import Button from "../components/Button";
 import { useCart } from "../context/CartContext";
+import { formatNaira } from "../utils/currency";
 
 // Cart page lets customers review quantities before checkout.
 const Cart = () => {
@@ -18,7 +19,7 @@ const Cart = () => {
               <div className="flex h-24 w-[88px] items-center justify-center rounded-md bg-[#f5f5f5] sm:w-24"><img className="h-full w-full object-contain p-1" src={item.images?.[0]?.url} alt={item.name} /></div>
               <div className="min-w-0 pr-7 sm:pr-0">
                 <p className="line-clamp-2 text-sm font-bold sm:text-base">{item.name}</p>
-                <p className="text-sm text-ink/60">${item.price}</p>
+                <p className="text-sm text-ink/60">{formatNaira(item.price)}</p>
                 <div className="mt-2 inline-flex items-center rounded-md bg-pearl sm:mt-3 sm:rounded-full">
                   <button className="p-2" onClick={() => updateQty(item._id, item.qty - 1)} aria-label="Decrease quantity">
                     <Minus size={16} />
@@ -38,10 +39,10 @@ const Cart = () => {
         <aside className="h-fit rounded-lg bg-white p-4 shadow-soft ring-1 ring-black/5 sm:p-6">
           <p className="text-lg font-extrabold sm:text-xl">Order summary</p>
           <div className="mt-4 space-y-3 text-sm sm:mt-5">
-            <div className="flex justify-between"><span>Subtotal</span><span>${totals.subtotal.toFixed(2)}</span></div>
-            <div className="flex justify-between"><span>Shipping</span><span>${totals.shipping.toFixed(2)}</span></div>
-            <div className="flex justify-between"><span>Tax</span><span>${totals.tax.toFixed(2)}</span></div>
-            <div className="flex justify-between border-t border-linen pt-3 text-base font-extrabold"><span>Total</span><span>${totals.total.toFixed(2)}</span></div>
+            <div className="flex justify-between"><span>Subtotal</span><span>{formatNaira(totals.subtotal)}</span></div>
+            <div className="flex justify-between"><span>Shipping</span><span>{formatNaira(totals.shipping)}</span></div>
+            <div className="flex justify-between"><span>Tax</span><span>{formatNaira(totals.tax)}</span></div>
+            <div className="flex justify-between border-t border-linen pt-3 text-base font-extrabold"><span>Total</span><span>{formatNaira(totals.total)}</span></div>
           </div>
           <Link to="/checkout">
             <Button disabled={items.length === 0} className="mt-6 w-full">Checkout</Button>

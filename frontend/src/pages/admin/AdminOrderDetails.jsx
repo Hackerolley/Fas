@@ -3,9 +3,10 @@ import { Link, useParams } from "react-router-dom";
 import AdminNav from "./AdminNav";
 import Button from "../../components/Button";
 import api from "../../api/axios";
+import { formatNaira } from "../../utils/currency";
 
 const statuses = ["processing", "paid", "shipped", "delivered", "cancelled"];
-const money = (value) => `$${Number(value || 0).toFixed(2)}`;
+const money = formatNaira;
 
 // Fulfillment screen lets an administrator update the lifecycle of a live order.
 const AdminOrderDetails = () => {

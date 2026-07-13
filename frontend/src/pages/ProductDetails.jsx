@@ -5,6 +5,7 @@ import api from "../api/axios";
 import Button from "../components/Button";
 import CircleLoader from "../components/CircleLoader";
 import { useCart } from "../context/CartContext";
+import { formatNaira } from "../utils/currency";
 
 // Product details page shows a large image, product content, and cart action.
 const ProductDetails = () => {
@@ -54,8 +55,8 @@ const ProductDetails = () => {
         </div>
         <p className="mt-6 text-lg leading-8 text-ink/70">{product.description}</p>
         <div className="mt-8 flex items-end gap-3">
-          <span className="text-4xl font-extrabold">${product.price}</span>
-          {product.compareAtPrice > 0 && <span className="pb-1 text-lg text-ink/40 line-through">${product.compareAtPrice}</span>}
+          <span className="text-4xl font-extrabold">{formatNaira(product.price)}</span>
+          {product.compareAtPrice > 0 && <span className="pb-1 text-lg text-ink/40 line-through">{formatNaira(product.compareAtPrice)}</span>}
         </div>
         <p className="mt-3 text-sm font-semibold text-moss">{product.countInStock > 0 ? `${product.countInStock} in stock` : "Out of stock"}</p>
         <Button disabled={product.countInStock === 0} onClick={() => addToCart(product)} className="mt-8 w-full sm:w-auto">
