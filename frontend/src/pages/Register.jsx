@@ -1,38 +1,20 @@
+import { ArrowRight, LockKeyhole, Mail, Sparkles, UserRound } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Button from "../components/Button";
+import CircleLoader from "../components/CircleLoader";
 import { useAuth } from "../context/AuthContext";
 
-// Register page creates a customer account through the backend.
+// Register page creates an account with matching sign-in visual language.
 const Register = () => {
   const navigate = useNavigate();
   const { register } = useAuth();
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const input = "mt-2 min-h-12 w-full rounded-xl border border-linen bg-white px-4 text-sm outline-none transition placeholder:text-ink/35 focus:border-[#b77900] focus:ring-4 focus:ring-[#ffd94a]/20";
+  const submit = async (event) => { event.preventDefault(); setSaving(true); setError(""); try { await register(form.name, form.email, form.password); navigate("/account"); } catch { setError("We could not create your account. Please use a different email or try again."); } finally { setSaving(false); } };
 
-  const submit = async (event) => {
-    event.preventDefault();
-    try {
-      await register(form.name, form.email, form.password);
-      navigate("/account");
-    } catch {
-      setError("Registration failed. Confirm the backend is running and the email is unused.");
-    }
-  };
-
-  return (
-    <section className="mx-auto max-w-md px-4 py-12 sm:px-6 lg:px-8">
-      <h1 className="text-4xl font-extrabold">Create account</h1>
-      <form onSubmit={submit} className="mt-8 space-y-4 rounded-lg bg-white p-6 shadow-soft ring-1 ring-black/5">
-        <input className="min-h-11 w-full rounded-lg border border-linen px-3 outline-none focus:border-clay" placeholder="Full name" onChange={(event) => setForm({ ...form, name: event.target.value })} />
-        <input className="min-h-11 w-full rounded-lg border border-linen px-3 outline-none focus:border-clay" placeholder="Email" type="email" onChange={(event) => setForm({ ...form, email: event.target.value })} />
-        <input className="min-h-11 w-full rounded-lg border border-linen px-3 outline-none focus:border-clay" placeholder="Password" type="password" onChange={(event) => setForm({ ...form, password: event.target.value })} />
-        <Button type="submit" className="w-full">Register</Button>
-        {error && <p className="text-sm font-semibold text-clay">{error}</p>}
-        <p className="text-sm text-ink/60">Already joined? <Link className="font-bold text-ink" to="/login">Login</Link></p>
-      </form>
-    </section>
-  );
+  return <section className="mx-auto grid min-h-[calc(100vh-9rem)] max-w-5xl items-center gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8"><aside className="hidden rounded-3xl bg-[#b77900] p-10 text-white shadow-soft lg:block"><p className="text-xs font-extrabold uppercase tracking-[0.22em] text-[#fff4cc]">Froyal Amity Store</p><h1 className="mt-5 text-5xl font-extrabold leading-tight">A better way to shop.</h1><p className="mt-5 max-w-sm leading-7 text-white/80">Create an account for a smoother checkout, saved address and simple order tracking.</p><div className="mt-12 flex items-center gap-3 text-sm font-semibold text-white/90"><span className="grid h-10 w-10 place-items-center rounded-full bg-[#fff4cc] text-[#9b7400]"><Sparkles size={19} /></span> Your favourites, all in one place</div></aside><div className="rounded-3xl bg-white p-6 shadow-soft ring-1 ring-black/5 sm:p-10"><p className="text-xs font-extrabold uppercase tracking-[0.2em] text-[#9b7400]">Join the store</p><h1 className="mt-3 text-3xl font-extrabold sm:text-4xl">Create your account</h1><p className="mt-3 text-sm leading-6 text-ink/60">It takes less than a minute to get started.</p><form onSubmit={submit} className="mt-8 space-y-5"><label className="block text-sm font-bold text-ink/75">Full name<div className="relative"><UserRound size={17} className="pointer-events-none absolute left-4 top-5 text-ink/40" /><input required value={form.name} className={`${input} pl-11`} placeholder="Your full name" autoComplete="name" onChange={(event) => setForm({ ...form, name: event.target.value })} /></div></label><label className="block text-sm font-bold text-ink/75">Email address<div className="relative"><Mail size={17} className="pointer-events-none absolute left-4 top-5 text-ink/40" /><input required value={form.email} className={`${input} pl-11`} placeholder="you@example.com" type="email" autoComplete="email" onChange={(event) => setForm({ ...form, email: event.target.value })} /></div></label><label className="block text-sm font-bold text-ink/75">Password<div className="relative"><LockKeyhole size={17} className="pointer-events-none absolute left-4 top-5 text-ink/40" /><input required minLength="6" value={form.password} className={`${input} pl-11`} placeholder="At least 6 characters" type="password" autoComplete="new-password" onChange={(event) => setForm({ ...form, password: event.target.value })} /></div></label>{error && <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">{error}</p>}<Button type="submit" disabled={saving} className="w-full !bg-[#b77900] hover:!bg-ink">{saving ? <><CircleLoader className="mr-2" label="Creating account" />Creating account…</> : <>Create account <ArrowRight size={17} /></>}</Button></form><p className="mt-7 text-center text-sm text-ink/60">Already have an account? <Link className="font-extrabold text-[#9b7400] hover:text-ink" to="/login">Sign in</Link></p></div></section>;
 };
-
 export default Register;

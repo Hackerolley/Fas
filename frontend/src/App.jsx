@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useLocation } from "react-router-dom";
 import Navbar from "./layouts/Navbar";
 import Footer from "./layouts/Footer";
 import Home from "./pages/Home";
@@ -21,8 +21,11 @@ import AdminBlogs from "./pages/admin/AdminBlogs";
 import AdminAdvertisements from "./pages/admin/AdminAdvertisements";
 
 // App defines all public and admin routes in one easy-to-scan place.
-const App = () => (
-  <div className="flex min-h-screen flex-col bg-pearl text-ink">
+const App = () => {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith("/admin");
+
+  return <div className="flex min-h-screen flex-col bg-pearl text-ink">
     <Navbar />
     <main className="flex-1">
       <Routes>
@@ -47,8 +50,8 @@ const App = () => (
         <Route path="/admin/advertisements" element={<AdminAdvertisements />} />
       </Routes>
     </main>
-    <Footer />
-  </div>
-);
+    {!isAdminRoute && <Footer />}
+  </div>;
+};
 
 export default App;

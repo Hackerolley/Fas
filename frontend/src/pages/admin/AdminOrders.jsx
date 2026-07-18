@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import AdminNav from "./AdminNav";
 import api from "../../api/axios";
 import CircleLoader from "../../components/CircleLoader";
+import Button from "../../components/Button";
 
 
 // Admin orders page displays real database orders.
@@ -199,23 +200,8 @@ const AdminOrders = () => {
                 <td>
 
 
-                  <Link
-                    to={`/admin/orders/${order._id}`}
-                    className="
-                      rounded-md
-                      bg-black
-                      px-3
-                      py-2
-                      text-xs
-                      font-semibold
-                      text-white
-                      transition
-                      hover:bg-gray-800
-                    "
-                  >
-
-                    View
-
+                  <Link to={`/admin/orders/${order._id}`}>
+                    <Button size="sm">View</Button>
                   </Link>
 
 
