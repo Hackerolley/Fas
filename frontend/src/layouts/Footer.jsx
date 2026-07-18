@@ -1,3 +1,5 @@
+import { Facebook, Instagram, Music2 } from "lucide-react";
+
 // Footer keeps Store trust signals visible without taking over the page.
 const Footer = () => (
   <footer className="mt-auto shrink-0 border-t border-ink/10 bg-white">
@@ -22,10 +24,10 @@ const Footer = () => (
       <div>
         <p className="font-medium">Follow us</p>
         {/* Replace these # links with the store's real social profiles before launch. */}
-        <div className="mt-3 flex gap-3 text-sm text-ink/60">
-          <a href="https://www.instagram.com/" target="_blank" rel="noreferrer" aria-label="Instagram">Instagram</a>
-          <a href="https://www.facebook.com/" target="_blank" rel="noreferrer" aria-label="Facebook">Facebook</a>
-          <a href="https://www.tiktok.com/" target="_blank" rel="noreferrer" aria-label="TikTok">TikTok</a>
+        <div className="mt-3 flex gap-2 text-ink/60">
+          <a className="rounded-full bg-pearl p-2 hover:bg-[#fff4cc] hover:text-ink" href="https://www.instagram.com/" target="_blank" rel="noreferrer" aria-label="Instagram"><Instagram size={18} /></a>
+          <a className="rounded-full bg-pearl p-2 hover:bg-[#fff4cc] hover:text-ink" href="https://www.facebook.com/" target="_blank" rel="noreferrer" aria-label="Facebook"><Facebook size={18} /></a>
+          <a className="rounded-full bg-pearl p-2 hover:bg-[#fff4cc] hover:text-ink" href="https://www.tiktok.com/" target="_blank" rel="noreferrer" aria-label="TikTok"><Music2 size={18} /></a>
         </div>
       </div>
     </div>

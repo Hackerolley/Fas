@@ -3,6 +3,7 @@ import { Package, ShoppingCart, Users, Wallet } from "lucide-react";
 import AdminNav from "./AdminNav";
 import StatCard from "../../components/StatCard";
 import api from "../../api/axios";
+import CircleLoader from "../../components/CircleLoader";
 
 // Admin dashboard displays live operational summaries from database.
 const AdminDashboard = () => {
@@ -54,9 +55,7 @@ const AdminDashboard = () => {
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <AdminNav />
 
-        <p className="mt-10 text-center text-sm text-gray-500">
-          Loading dashboard...
-        </p>
+        <div className="mt-10 flex justify-center"><CircleLoader className="text-clay" label="Loading dashboard" /></div>
       </section>
     );
   }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import AdminNav from "./AdminNav";
 import api from "../../api/axios";
+import CircleLoader from "../../components/CircleLoader";
 
 // Admin users page displays real customers from database.
 const AdminUsers = () => {
@@ -50,9 +51,7 @@ const AdminUsers = () => {
 
         <AdminNav />
 
-        <p className="mt-8 text-sm text-gray-500">
-          Loading users...
-        </p>
+        <div className="mt-10 flex justify-center"><CircleLoader className="text-clay" label="Loading users" /></div>
 
       </section>
 

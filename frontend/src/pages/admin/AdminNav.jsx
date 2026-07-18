@@ -6,8 +6,9 @@ const AdminNav = () => {
     ["Dashboard", "/admin"],
     ["Products", "/admin/products"],
     ["Orders", "/admin/orders"],
-    ["Users", "/admin/users"]
-    ,["Blog", "/admin/blogs"]
+    ["Users", "/admin/users"],
+    ["Blog", "/admin/blogs"],
+    ["Ads", "/admin/advertisements"]
   ];
 
   return (

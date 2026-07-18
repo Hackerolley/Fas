@@ -28,7 +28,7 @@ const Home = () => {
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link to="/shop">
-                <Button className="bg-white text-ink hover:bg-linen">
+                <Button className="bg-[#ffd94a] text-ink shadow-lg shadow-black/25 ring-2 ring-[#ffd94a]/70 hover:bg-[#ffea8a] hover:ring-white">
                   Shop collection <ArrowRight className="ml-2" size={18} />
                 </Button>
               </Link>

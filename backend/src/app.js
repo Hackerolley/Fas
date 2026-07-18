@@ -12,6 +12,7 @@ import userRoutes from "./routes/userRoutes.js";
 import { errorHandler, notFound } from "./middleware/errorMiddleware.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import blogRoutes from "./routes/blogRoutes.js";
+import advertisementRoutes from "./routes/advertisementRoutes.js";
 
 // Create the Express app in its own file so tests can import it without starting a server.
 const app = express();
@@ -62,6 +63,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/uploads", uploadRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/blogs", blogRoutes);
+app.use("/api/advertisements", advertisementRoutes);
 
 
 // Error middleware must sit after routes so it can catch route failures.

@@ -18,6 +18,7 @@ import AdminOrders from "./pages/admin/AdminOrders";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminOrderDetails from "./pages/admin/AdminOrderDetails";
 import AdminBlogs from "./pages/admin/AdminBlogs";
+import AdminAdvertisements from "./pages/admin/AdminAdvertisements";
 
 // App defines all public and admin routes in one easy-to-scan place.
 const App = () => (
@@ -43,6 +44,7 @@ const App = () => (
         <Route path="/admin/orders/:id" element={<AdminOrderDetails />}
 />
         <Route path="/admin/blogs" element={<AdminBlogs />} />
+        <Route path="/admin/advertisements" element={<AdminAdvertisements />} />
       </Routes>
     </main>
     <Footer />

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import AdminNav from "./AdminNav";
 import api from "../../api/axios";
+import CircleLoader from "../../components/CircleLoader";
 
 
 // Admin orders page displays real database orders.
@@ -55,9 +56,7 @@ const AdminOrders = () => {
 
         <AdminNav />
 
-        <p className="mt-8 text-sm text-gray-500">
-          Loading orders...
-        </p>
+        <div className="mt-10 flex justify-center"><CircleLoader className="text-clay" label="Loading orders" /></div>
 
       </section>
 
