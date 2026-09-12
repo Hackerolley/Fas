@@ -1,8 +1,19 @@
 import User from "../models/User.js";
 import generateToken from "../utils/generateToken.js";
 
-// Returns a safe user payload plus token for frontend session storage.
+const normaliseEmail = (email) => String(email || "").trim().toLowerCase();
+const safeString = (value, max) => typeof value === "string" && value.trim().length > 0 && value.trim().length <= max;
+
+// Keeps the bearer token out of JavaScript-readable browser storage.
 const sendAuthResponse = (res, user, statusCode = 200) => {
+  const token = generateToken(user._id);
+  res.cookie("froyal_access_token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    path: "/"
+  });
   res.status(statusCode).json({
     _id: user._id,
     name: user.name,
@@ -10,15 +21,18 @@ const sendAuthResponse = (res, user, statusCode = 200) => {
     role: user.role,
     avatar: user.avatar,
     shippingAddress: user.shippingAddress,
-    notificationPreferences: user.notificationPreferences,
-    token: generateToken(user._id)
+    notificationPreferences: user.notificationPreferences
   });
 };
 
 // Registers a new customer account.
 export const registerUser = async (req, res, next) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, password } = req.body;
+    const email = normaliseEmail(req.body.email);
+    if (!safeString(name, 100) || !/^\S+@\S+\.\S+$/.test(email) || typeof password !== "string" || password.length < 10) {
+      res.status(400); throw new Error("Provide a name, valid email, and password of at least 10 characters.");
+    }
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
@@ -36,7 +50,9 @@ export const registerUser = async (req, res, next) => {
 // Authenticates an existing user with email and password.
 export const loginUser = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const email = normaliseEmail(req.body.email);
+    const { password } = req.body;
+    if (!email || typeof password !== "string") { res.status(400); throw new Error("Email and password are required."); }
     const user = await User.findOne({ email });
 
     if (user && (await user.matchPassword(password))) {
@@ -50,6 +66,11 @@ export const loginUser = async (req, res, next) => {
   }
 };
 
+export const logoutUser = (req, res) => {
+  res.clearCookie("froyal_access_token", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", path: "/" });
+  res.status(204).end();
+};
+
 // Returns the currently authenticated user's profile.
 export const getMe = async (req, res) => {
   res.json(req.user);
@@ -60,14 +81,31 @@ export const updateProfile = async (req, res, next) => {
   try {
     const user = await User.findById(req.user._id);
 
-    user.name = req.body.name || user.name;
-    user.email = req.body.email || user.email;
-    user.avatar = req.body.avatar || user.avatar;
-    if (req.body.shippingAddress) user.shippingAddress = { ...user.shippingAddress.toObject(), ...req.body.shippingAddress };
-    if (req.body.notificationPreferences) user.notificationPreferences = { ...user.notificationPreferences.toObject(), ...req.body.notificationPreferences };
+    if (req.body.name !== undefined) {
+      if (!safeString(req.body.name, 100)) { res.status(400); throw new Error("Name must be between 1 and 100 characters."); }
+      user.name = req.body.name.trim();
+    }
+    if (req.body.email !== undefined) {
+      const email = normaliseEmail(req.body.email);
+      if (!/^\S+@\S+\.\S+$/.test(email)) { res.status(400); throw new Error("Provide a valid email."); }
+      user.email = email;
+    }
+    if (req.body.avatar !== undefined && typeof req.body.avatar === "string" && req.body.avatar.length <= 2048) user.avatar = req.body.avatar;
+    if (req.body.shippingAddress) {
+      const address = req.body.shippingAddress;
+      const fields = ["fullName", "address", "city", "postalCode", "country", "phone"];
+      if (typeof address !== "object" || Object.entries(address).some(([key, value]) => !fields.includes(key) || typeof value !== "string" || value.length > 160)) { res.status(400); throw new Error("Shipping address is invalid."); }
+      user.shippingAddress = { ...user.shippingAddress.toObject(), ...address };
+    }
+    if (req.body.notificationPreferences) {
+      const preferences = req.body.notificationPreferences;
+      if (typeof preferences !== "object" || (preferences.email !== undefined && typeof preferences.email !== "boolean") || (preferences.whatsapp !== undefined && typeof preferences.whatsapp !== "boolean") || (preferences.whatsappNumber !== undefined && (typeof preferences.whatsappNumber !== "string" || preferences.whatsappNumber.length > 30))) { res.status(400); throw new Error("Notification preferences are invalid."); }
+      user.notificationPreferences = { ...user.notificationPreferences.toObject(), ...preferences };
+    }
 
     // Require the existing password before changing credentials on an active session.
     if (req.body.password) {
+      if (typeof req.body.password !== "string" || req.body.password.length < 10) { res.status(400); throw new Error("New password must be at least 10 characters."); }
       if (!req.body.currentPassword || !(await user.matchPassword(req.body.currentPassword))) {
         res.status(400);
         throw new Error("Your current password is incorrect.");

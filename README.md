@@ -1,6 +1,6 @@
 # Froyal Amity Store
 
-A complete full-stack eStore starter built with Node.js, Express, MongoDB, React, Axios, and Tailwind CSS. It includes product browsing, cart flow, checkout UI, authentication pages, user orders, and an admin dashboard.
+A complete full-stack eStore starter built with Node.js, Express, MongoDB, React, Axios, and Tailwind CSS. It includes product browsing, cart flow, checkout UI, authentication pages, user orders , Advertisement, and an admin dashboard .
 
 ## Project Structure
 
@@ -40,3 +40,10 @@ npm run dev
 - Admin routes are protected by auth and admin middleware. Make one account an `admin` in MongoDB before using the dashboard.
 - Customers can save profile, delivery address, notification choices, change password, view order history, and place authenticated orders. The server recalculates prices from products to prevent browser-side price manipulation.
 - The frontend currently uses elegant local demo data when the API is unavailable, so you can preview the UI before connecting MongoDB.
+
+## Production safety notes
+
+- Copy `frontend/.env.example` to `frontend/.env` and set `VITE_API_URL` to the API URL.
+- Use a JWT secret of at least 32 characters. Browser sessions are stored in HttpOnly cookies rather than localStorage.
+- Orders reserve inventory through a MongoDB transaction. Production MongoDB must support transactions (MongoDB Atlas replica sets do).
+- Card payment capture is intentionally not implemented yet. Do not fulfil `processing` orders until a signed, idempotent payment-provider webhook is integrated.

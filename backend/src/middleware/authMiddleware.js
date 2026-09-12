@@ -3,11 +3,11 @@ import User from "../models/User.js";
 
 // Protects private routes by reading a Bearer token from the Authorization header.
 export const protect = async (req, res, next) => {
-  let token;
+  let token = req.headers.authorization?.startsWith("Bearer")
+    ? req.headers.authorization.split(" ")[1]
+    : req.headers.cookie?.match(/(?:^|;\s*)froyal_access_token=([^;]+)/)?.[1];
 
-  if (req.headers.authorization?.startsWith("Bearer")) {
-    token = req.headers.authorization.split(" ")[1];
-  }
+  if (token) token = decodeURIComponent(token);
 
   if (!token) {
     res.status(401);
@@ -17,6 +17,10 @@ export const protect = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = await User.findById(decoded.userId).select("-password");
+    if (!req.user) {
+      res.status(401);
+      throw new Error("Not authorized, account no longer exists.");
+    }
     next();
   } catch (error) {
     res.status(401);

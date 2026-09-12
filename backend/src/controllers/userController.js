@@ -36,9 +36,20 @@ export const updateUser = async (req, res, next) => {
       throw new Error("User not found.");
     }
 
-    user.name = req.body.name || user.name;
-    user.email = req.body.email || user.email;
-    user.role = req.body.role || user.role;
+    if (req.body.name !== undefined) {
+      if (typeof req.body.name !== "string" || !req.body.name.trim() || req.body.name.length > 100) { res.status(400); throw new Error("User name is invalid."); }
+      user.name = req.body.name.trim();
+    }
+    if (req.body.email !== undefined) {
+      const email = String(req.body.email).trim().toLowerCase();
+      if (!/^\S+@\S+\.\S+$/.test(email)) { res.status(400); throw new Error("User email is invalid."); }
+      user.email = email;
+    }
+    if (req.body.role !== undefined) {
+      if (!["customer", "admin"].includes(req.body.role)) { res.status(400); throw new Error("User role is invalid."); }
+      if (user._id.toString() === req.user._id.toString() && req.body.role !== "admin") { res.status(400); throw new Error("You cannot remove your own admin access."); }
+      user.role = req.body.role;
+    }
 
     const updatedUser = await user.save();
     res.json({
@@ -61,6 +72,8 @@ export const deleteUser = async (req, res, next) => {
       res.status(404);
       throw new Error("User not found.");
     }
+    if (user._id.toString() === req.user._id.toString()) { res.status(400); throw new Error("You cannot delete your own account."); }
+    if (user.role === "admin" && await User.countDocuments({ role: "admin" }) <= 1) { res.status(400); throw new Error("The last administrator cannot be deleted."); }
 
     await user.deleteOne();
     res.json({ message: "User deleted." });

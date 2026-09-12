@@ -1,3 +1,4 @@
+import "dotenv/config";
 import cors from "cors";
 import express from "express";
 import helmet from "helmet";
@@ -18,21 +19,46 @@ import advertisementRoutes from "./routes/advertisementRoutes.js";
 const app = express();
 
 // Apply security headers, JSON parsing, request logging, and cross-origin access.
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'", "https:"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"]
+    }
+  }
+}));
 app.use(express.json({ limit: "2mb" }));
 app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
 const allowedOrigins = [
   "https://froyalamitystore-nu.vercel.app",
+  "http://localhost:5173",
   process.env.CLIENT_URL
-];
+].filter(Boolean);
 
 app.use(
   cors({
-    origin: allowedOrigins,
-    credentials: true
+    origin(origin, callback) {
+      // Requests without an Origin header are health checks, server-to-server calls, or same-origin.
+      if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error("Origin is not allowed by CORS."));
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
   })
 );
+
+// Authentication endpoints need a much tighter ceiling than catalogue reads.
+app.use("/api/auth", rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Too many authentication attempts. Please try again later." }
+}));
 
 // Keep noisy or abusive clients from overwhelming public API endpoints.
 app.use(

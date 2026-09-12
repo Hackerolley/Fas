@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { Minus, Plus, Trash2 } from "lucide-react";
-import Button from "../components/Button";
 import { useCart } from "../context/CartContext";
 import { formatNaira } from "../utils/currency";
 
@@ -44,9 +43,7 @@ const Cart = () => {
             <div className="flex justify-between"><span>Tax</span><span>{formatNaira(totals.tax)}</span></div>
             <div className="flex justify-between border-t border-linen pt-3 text-base font-extrabold"><span>Total</span><span>{formatNaira(totals.total)}</span></div>
           </div>
-          <Link to="/checkout">
-            <Button disabled={items.length === 0} className="mt-6 w-full">Checkout</Button>
-          </Link>
+          <Link to="/checkout" aria-disabled={items.length === 0} onClick={(event) => { if (!items.length) event.preventDefault(); }} className={`mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-full px-5 py-2 text-sm font-semibold ${items.length ? "bg-ink text-white hover:bg-clay" : "cursor-not-allowed bg-ink text-white opacity-60"}`}>Checkout</Link>
         </aside>
       </div>
     </section>

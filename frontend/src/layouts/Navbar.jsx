@@ -20,9 +20,9 @@ const Navbar = () => {
     ["Shop", "/shop"],
     ["About", "/about"],
     ["Blog", "/blog"],
-    ["Admin", "/admin"],
     ["Home", "/"]
   ];
+  if (user?.role === "admin") links.splice(3, 0, ["Admin", "/admin"]);
   useEffect(() => { api.get("/categories").then(({ data }) => setCategories(data)).catch(() => setCategories([])); }, []);
   const closeMenus = () => { setOpen(false); setCategoriesOpen(false); setProfileOpen(false); setSearchOpen(false); };
   const submitSearch = (event) => {

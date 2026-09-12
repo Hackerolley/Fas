@@ -37,15 +37,19 @@ export const getAdminBlogs = async (req, res, next) => {
 
 export const createBlog = async (req, res, next) => {
   try {
-    const slug = makeSlug(req.body.slug || req.body.title);
+    const allowed = ["title", "slug", "excerpt", "content", "image", "author", "type", "status"];
+    const payload = Object.fromEntries(Object.entries(req.body).filter(([key]) => allowed.includes(key)));
+    const slug = makeSlug(payload.slug || payload.title || "");
+    if (!slug) { res.status(400); throw new Error("A post title is required."); }
     if (await Blog.exists({ slug })) { res.status(400); throw new Error("A post with this title already exists."); }
-    res.status(201).json(await Blog.create({ ...req.body, slug }));
+    res.status(201).json(await Blog.create({ ...payload, slug }));
   } catch (error) { next(error); }
 };
 
 export const updateBlog = async (req, res, next) => {
   try {
-    const update = { ...req.body };
+    const allowed = ["title", "slug", "excerpt", "content", "image", "author", "type", "status"];
+    const update = Object.fromEntries(Object.entries(req.body).filter(([key]) => allowed.includes(key)));
     if (update.slug || update.title) update.slug = makeSlug(update.slug || update.title);
     const blog = await Blog.findByIdAndUpdate(req.params.id, update, { new: true, runValidators: true });
     if (!blog) { res.status(404); throw new Error("Blog post not found."); }

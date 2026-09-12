@@ -5,6 +5,7 @@ import { notifyOrderStatus } from "../utils/notifications.js";
 
 // Creates an order from cart and checkout details.
 export const createOrder = async (req, res, next) => {
+  const session = await Product.startSession();
   try {
     const {
       orderItems,
@@ -12,42 +13,53 @@ export const createOrder = async (req, res, next) => {
       paymentMethod
     } = req.body;
 
-    if (!orderItems || orderItems.length === 0) {
+    if (!Array.isArray(orderItems) || orderItems.length === 0 || orderItems.length > 50) {
       res.status(400);
       throw new Error("No order items provided.");
     }
 
-    // Rebuild prices from the catalogue so a browser cannot alter totals.
-    const productIds = orderItems.map((item) => item.product);
-    const products = await Product.find({ _id: { $in: productIds } });
-    const productById = new Map(products.map((product) => [product._id.toString(), product]));
-    const verifiedItems = orderItems.map((item) => {
-      const product = productById.get(item.product);
-      const qty = Number(item.qty);
-      if (!product || !Number.isInteger(qty) || qty < 1 || product.countInStock < qty) throw new Error("One or more products are unavailable in the requested quantity.");
-      return { product: product._id, name: product.name, qty, image: product.images?.[0]?.url || "", price: product.price };
+    const addressFields = ["fullName", "address", "city", "postalCode", "country", "phone"];
+    if (!shippingAddress || typeof shippingAddress !== "object" || addressFields.some((field) => typeof shippingAddress[field] !== "string" || !shippingAddress[field].trim() || shippingAddress[field].length > 160)) {
+      res.status(400); throw new Error("A complete shipping address is required.");
+    }
+    if (!["Card", "Cash on delivery"].includes(paymentMethod)) { res.status(400); throw new Error("Unsupported payment method."); }
+
+    const requestedQuantities = new Map();
+    for (const item of orderItems) {
+      const productId = String(item?.product || "");
+      const qty = Number(item?.qty);
+      if (!/^[a-f\d]{24}$/i.test(productId) || !Number.isInteger(qty) || qty < 1 || qty > 20) { res.status(400); throw new Error("Order items are invalid."); }
+      requestedQuantities.set(productId, (requestedQuantities.get(productId) || 0) + qty);
+    }
+
+    let order;
+    await session.withTransaction(async () => {
+      const productIds = [...requestedQuantities.keys()];
+      const products = await Product.find({ _id: { $in: productIds }, status: "active" }).session(session);
+      const productById = new Map(products.map((product) => [product._id.toString(), product]));
+      if (products.length !== productIds.length) throw new Error("One or more products are unavailable.");
+
+      // Conditional decrements make the stock check and update one atomic operation.
+      for (const [productId, qty] of requestedQuantities) {
+        const result = await Product.updateOne({ _id: productId, countInStock: { $gte: qty }, status: "active" }, { $inc: { countInStock: -qty } }, { session });
+        if (result.modifiedCount !== 1) throw new Error("One or more products are unavailable in the requested quantity.");
+      }
+      const verifiedItems = [...requestedQuantities].map(([productId, qty]) => {
+        const product = productById.get(productId);
+        return { product: product._id, name: product.name, qty, image: product.images?.[0]?.url || "", price: product.price };
+      });
+      const itemsPrice = verifiedItems.reduce((sum, item) => sum + item.price * item.qty, 0);
+      const shippingPrice = itemsPrice > 15000 ? 0 : 1200;
+      const taxPrice = Math.round(itemsPrice * 0.08);
+      [itemsPrice, shippingPrice, taxPrice].forEach((amount) => { if (!Number.isSafeInteger(amount)) throw new Error("Order total is invalid."); });
+      [order] = await Order.create([{ user: req.user._id, orderItems: verifiedItems, shippingAddress, paymentMethod, itemsPrice, taxPrice, shippingPrice, totalPrice: itemsPrice + taxPrice + shippingPrice }], { session });
+      await User.findByIdAndUpdate(req.user._id, { shippingAddress }, { session, runValidators: true });
     });
-    const computedItemsPrice = verifiedItems.reduce((sum, item) => sum + item.price * item.qty, 0);
-    const computedShippingPrice = computedItemsPrice > 150 ? 0 : 12;
-    const computedTaxPrice = computedItemsPrice * 0.08;
-
-    const order = await Order.create({
-      user: req.user._id,
-      orderItems: verifiedItems,
-      shippingAddress,
-      paymentMethod,
-      itemsPrice: computedItemsPrice,
-      taxPrice: computedTaxPrice,
-      shippingPrice: computedShippingPrice,
-      totalPrice: computedItemsPrice + computedTaxPrice + computedShippingPrice
-    });
-
-    // Save the latest checkout address as a convenient default for the next purchase.
-    await User.findByIdAndUpdate(req.user._id, { shippingAddress });
-
     res.status(201).json(order);
   } catch (error) {
     next(error);
+  } finally {
+    await session.endSession();
   }
 };
 

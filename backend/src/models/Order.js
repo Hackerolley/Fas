@@ -2,10 +2,10 @@ import mongoose from "mongoose";
 
 // Order item snapshot keeps price/name/image stable after checkout.
 const orderItemSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  qty: { type: Number, required: true },
-  image: { type: String, required: true },
-  price: { type: Number, required: true },
+  name: { type: String, required: true, trim: true, maxlength: 200 },
+  qty: { type: Number, required: true, min: 1, validate: Number.isInteger },
+  image: { type: String, default: "", maxlength: 2048 },
+  price: { type: Number, required: true, min: 0, validate: Number.isInteger },
   product: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
@@ -57,5 +57,8 @@ const orderSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+orderSchema.index({ user: 1, createdAt: -1 });
+orderSchema.index({ status: 1, createdAt: -1 });
 
 export default mongoose.model("Order", orderSchema);

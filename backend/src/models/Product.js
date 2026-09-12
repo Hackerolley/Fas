@@ -42,15 +42,21 @@ const productSchema = new mongoose.Schema(
     },
     brand: {
       type: String,
-      required: true
+      required: true,
+      trim: true,
+      maxlength: 100
     },
     category: {
       type: String,
-      required: true
+      required: true,
+      trim: true,
+      maxlength: 100
     },
     description: {
       type: String,
-      required: true
+      required: true,
+      trim: true,
+      maxlength: 5000
     },
     images: [
       {
@@ -61,11 +67,14 @@ const productSchema = new mongoose.Schema(
     price: {
       type: Number,
       required: true,
-      min: 0
+      min: 0,
+      validate: Number.isInteger
     },
     compareAtPrice: {
       type: Number,
-      default: 0
+      default: 0,
+      min: 0,
+      validate: Number.isInteger
     },
     countInStock: {
       type: Number,
@@ -95,5 +104,8 @@ const productSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+productSchema.index({ status: 1, featured: 1, createdAt: -1 });
+productSchema.index({ category: 1, status: 1, createdAt: -1 });
 
 export default mongoose.model("Product", productSchema);

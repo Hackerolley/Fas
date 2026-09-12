@@ -1,13 +1,18 @@
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { ArrowRight, ShieldCheck, Truck, WalletCards } from "lucide-react";
-import Button from "../components/Button";
 import ProductCard from "../components/ProductCard";
 import SectionHeader from "../components/SectionHeader";
-import { demoProducts } from "../data/demoProducts";
+import api from "../api/axios";
 
 // Home page introduces the brand and highlights featured products.
 const Home = () => {
-  const featured = demoProducts.filter((product) => product.featured);
+  const [featured, setFeatured] = useState([]);
+  useEffect(() => {
+    const controller = new AbortController();
+    api.get("/products?featured=true&limit=6", { signal: controller.signal }).then(({ data }) => setFeatured(data.products || [])).catch(() => setFeatured([]));
+    return () => controller.abort();
+  }, []);
 
   return (
     <>
@@ -27,16 +32,8 @@ const Home = () => {
               Curated fashion, refined accessories, and home pieces designed for calm, beautiful living.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link to="/shop">
-                <Button className="bg-[#ffd94a] text-ink shadow-lg shadow-black/25 ring-2 ring-[#ffd94a]/70 hover:bg-[#ffea8a] hover:ring-white">
-                  Shop collection <ArrowRight className="ml-2" size={18} />
-                </Button>
-              </Link>
-              <Link to="/about">
-                <Button variant="ghost" className="text-white ring-1 ring-white/30 hover:bg-white/10">
-                  Our story
-                </Button>
-              </Link>
+              <Link to="/shop" className="inline-flex min-h-11 items-center rounded-full bg-[#ffd94a] px-5 py-2 text-sm font-semibold text-ink shadow-lg shadow-black/25 ring-2 ring-[#ffd94a]/70 hover:bg-[#ffea8a] hover:ring-white">Shop collection <ArrowRight className="ml-2" size={18} /></Link>
+              <Link to="/about" className="inline-flex min-h-11 items-center rounded-full px-5 py-2 text-sm font-semibold text-white ring-1 ring-white/30 hover:bg-white/10">Our story</Link>
             </div>
           </div>
         </div>
@@ -47,7 +44,7 @@ const Home = () => {
           {[
             [Truck, "Fast delivery", "Free delivery over $150"],
             [ShieldCheck, "Quality checked", "Carefully sourced materials"],
-            [WalletCards, "Secure checkout", "Ready for your payment provider"]
+            [WalletCards, "Protected ordering", "Payment integration coming soon"]
           ].map(([Icon, title, text]) => (
             <div key={title} className="rounded-lg bg-white p-5 shadow-soft ring-1 ring-black/5">
               <Icon className="text-moss" size={24} />

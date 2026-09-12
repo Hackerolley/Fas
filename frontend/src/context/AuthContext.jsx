@@ -5,9 +5,11 @@ import api from "../api/axios";
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => JSON.parse(localStorage.getItem("Froyal AmityUser") || "null"));
+  const [user, setUser] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("Froyal AmityUser") || "null"); } catch { return null; }
+  });
 
-  // Saves authenticated user data and token locally.
+  // Stores only non-sensitive display data; the session token is an HttpOnly cookie.
   const persistUser = (userData) => {
     setUser(userData);
     localStorage.setItem("Froyal AmityUser", JSON.stringify(userData));
@@ -28,7 +30,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Clears the local session.
-  const logout = () => {
+  const logout = async () => {
+    try { await api.post("/auth/logout"); } catch { /* local logout still succeeds */ }
     setUser(null);
     localStorage.removeItem("Froyal AmityUser");
   };

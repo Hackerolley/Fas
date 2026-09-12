@@ -6,9 +6,9 @@ import { notifyOrderStatus } from "../utils/notifications.js";
 // Dashboard statistics
 export const getDashboardStats = async (req, res) => {
   try {
-    const products = await Product.countDocuments();
-    const orders = await Order.countDocuments();
-    const customers = await User.countDocuments();
+    const [products, orders, customers] = await Promise.all([
+      Product.countDocuments(), Order.countDocuments(), User.countDocuments({ role: "customer" })
+    ]);
 
     const revenueResult = await Order.aggregate([
       {
@@ -120,8 +120,13 @@ export const updateOrderStatus = async (req, res) => {
     const { status } = req.body;
 
 
-    const allowedStatuses = ["processing", "paid", "shipped", "delivered", "cancelled"];
-    if (!allowedStatuses.includes(status)) return res.status(400).json({ message: "Invalid order status" });
+    const allowedTransitions = {
+      processing: ["paid", "cancelled"],
+      paid: ["shipped", "cancelled"],
+      shipped: ["delivered"],
+      delivered: [],
+      cancelled: []
+    };
 
     const order = await Order.findById(req.params.id)
       .populate("user", "name email notificationPreferences");
@@ -136,31 +141,30 @@ export const updateOrderStatus = async (req, res) => {
     }
 
 
-    order.status = status;
-
-
-    // Automatically update delivery state
-    if (status === "delivered") {
-
-      order.isDelivered = true;
-      order.deliveredAt = Date.now();
-
+    if (!allowedTransitions[order.status]?.includes(status)) {
+      return res.status(409).json({ message: `Cannot change an order from ${order.status} to ${status}.` });
     }
 
+    const updates = { status };
+    if (status === "delivered") { updates.isDelivered = true; updates.deliveredAt = new Date(); }
+    if (status === "paid") { updates.isPaid = true; updates.paidAt = new Date(); }
 
-    // Automatically update payment state
-    if (status === "paid") {
+    // Compare-and-set prevents two admins from processing the same transition twice.
+    const updatedOrder = await Order.findOneAndUpdate(
+      { _id: order._id, status: order.status },
+      { $set: updates },
+      { new: true, runValidators: true }
+    ).populate("user", "name email notificationPreferences");
+    if (!updatedOrder) return res.status(409).json({ message: "This order was changed by another administrator. Refresh and try again." });
 
-      order.isPaid = true;
-      order.paidAt = Date.now();
-
+    // Return reserved stock only after the compare-and-set cancellation succeeds.
+    if (status === "cancelled") {
+      const bulk = order.orderItems.map((item) => ({ updateOne: { filter: { _id: item.product }, update: { $inc: { countInStock: item.qty } } } }));
+      if (bulk.length) await Product.bulkWrite(bulk);
     }
-
-
-    const updatedOrder = await order.save();
 
     // Send opt-in email/WhatsApp messages only after the database update succeeds.
-    notifyOrderStatus(order);
+    await notifyOrderStatus(updatedOrder);
 
 
     res.status(200).json(updatedOrder);

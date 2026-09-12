@@ -1,6 +1,7 @@
 // Optional transactional notifications. Leave credentials blank during local development.
 // Resend sends email; Meta WhatsApp Cloud API sends approved template messages.
 const orderLabel = (order) => `#${order._id.toString().slice(-6).toUpperCase()}`;
+const escapeHtml = (value) => String(value).replace(/[&<>'"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[character]);
 
 export const notifyOrderStatus = async (order) => {
   const user = order.user;
@@ -18,7 +19,7 @@ export const notifyOrderStatus = async (order) => {
         from: process.env.EMAIL_FROM,
         to: [user.email],
         subject: `Order ${reference}: ${status}`,
-        html: `<p>Hello ${user.name},</p><p>Your order <strong>${reference}</strong> is now <strong>${status}</strong>.</p>`
+        html: `<p>Hello ${escapeHtml(user.name)},</p><p>Your order <strong>${reference}</strong> is now <strong>${escapeHtml(status)}</strong>.</p>`
       })
     }));
   }
@@ -36,5 +37,7 @@ export const notifyOrderStatus = async (order) => {
 
   // Notifications must never make an order update fail; provider failures are logged for diagnosis.
   const results = await Promise.allSettled(jobs);
-  results.filter((result) => result.status === "rejected").forEach((result) => console.error("Order notification failed:", result.reason));
+  results.forEach((result) => {
+    if (result.status === "rejected" || !result.value?.ok) console.error("Order notification failed:", result.status === "rejected" ? result.reason : result.value.status);
+  });
 };

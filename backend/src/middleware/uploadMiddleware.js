@@ -5,7 +5,7 @@ const storage = multer.memoryStorage();
 
 // Accept only common web image formats for product media.
 const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("image/")) {
+  if (["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.mimetype)) {
     cb(null, true);
   } else {
     cb(new Error("Only image uploads are allowed."), false);
