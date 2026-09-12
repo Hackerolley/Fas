@@ -3,17 +3,23 @@ import generateToken from "../utils/generateToken.js";
 
 const normaliseEmail = (email) => String(email || "").trim().toLowerCase();
 const safeString = (value, max) => typeof value === "string" && value.trim().length > 0 && value.trim().length <= max;
+// The Vercel storefront and Render API are different browser sites. Cross-site
+// sessions require SameSite=None and Secure, even if NODE_ENV was misconfigured.
+const cookieOptions = () => {
+  const secure = process.env.NODE_ENV === "production" || process.env.CLIENT_URL?.startsWith("https://");
+  return {
+    httpOnly: true,
+    secure,
+    sameSite: secure ? "none" : "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    path: "/"
+  };
+};
 
 // Keeps the bearer token out of JavaScript-readable browser storage.
 const sendAuthResponse = (res, user, statusCode = 200) => {
   const token = generateToken(user._id);
-  res.cookie("froyal_access_token", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-    path: "/"
-  });
+  res.cookie("froyal_access_token", token, cookieOptions());
   res.status(statusCode).json({
     _id: user._id,
     name: user.name,
@@ -67,7 +73,9 @@ export const loginUser = async (req, res, next) => {
 };
 
 export const logoutUser = (req, res) => {
-  res.clearCookie("froyal_access_token", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", path: "/" });
+  const options = cookieOptions();
+  delete options.maxAge;
+  res.clearCookie("froyal_access_token", options);
   res.status(204).end();
 };
 
