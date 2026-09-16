@@ -40,9 +40,9 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
-  // Stores the profile persistently and keeps the bearer fallback available when cookies are blocked.
+  // Stores display data only. Authentication remains in the HttpOnly cookie.
   const persistUser = useCallback((userData) => {
-    const { token, ...rawUser } = userData ?? {};
+    const rawUser = userData ?? {};
     const role = rawUser?.role || (rawUser?.isAdmin ? "admin" : "customer");
     const safeUser = rawUser ? { ...rawUser, role, isAdmin: role === "admin" } : null;
 
@@ -52,7 +52,9 @@ export const AuthProvider = ({ children }) => {
     } else {
       localStorage.removeItem("Froyal AmityUser");
     }
-    if (token) localStorage.setItem("Froyal AmityAccessToken", token);
+    // Remove bearer tokens created by earlier app versions.
+    localStorage.removeItem("Froyal AmityAccessToken");
+    sessionStorage.removeItem("Froyal AmityAccessToken");
   }, []);
 
   // Calls backend login and stores the returned token.

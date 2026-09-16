@@ -15,11 +15,4 @@ const api = axios.create({
   withCredentials: true
 });
 
-// The cookie is primary; the persisted bearer token supports browsers that block cross-site cookies.
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("Froyal AmityAccessToken") || sessionStorage.getItem("Froyal AmityAccessToken");
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
-
 export default api;

@@ -24,7 +24,6 @@ const sendAuthResponse = (req, res, user, statusCode = 200) => {
   const token = generateToken(user._id);
   const normalizedRole = user.role || (user.isAdmin ? "admin" : "customer");
   const payload = {
-    token,
     _id: user._id,
     name: user.name,
     email: user.email,

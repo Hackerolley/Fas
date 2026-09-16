@@ -36,7 +36,7 @@ npm run dev
 
 ## API Reference
 
-Use `http://localhost:5000/api` as the local base URL or `https://froyalamitystore.onrender.com/api` in production. Authentication normally uses an HttpOnly `froyal_access_token` cookie; login and registration also return a `token` field as a bearer-token fallback for browsers that block cross-site cookies.
+Use `http://localhost:5000/api` as the local base URL or `https://froyalamitystore.onrender.com/api` in production. Authentication uses a Secure, HttpOnly `froyal_access_token` cookie; the browser never receives a reusable bearer token.
 
 ### System and authentication
 
@@ -140,11 +140,7 @@ PUT    /admin/advertisements/:id     # Updates an advertisement. [Admin]
 DELETE /admin/advertisements/:id     # Deletes an advertisement. [Admin]
 ```
 
-For protected Postman requests, first call `/auth/login`, then either keep the returned `froyal_access_token` cookie or copy the returned `token` into an `Authorization` header:
-
-```text
-Authorization: Bearer YOUR_TOKEN
-```
+For protected Postman requests, keep the `froyal_access_token` cookie returned by `/auth/login`.
 
 ## Notes
 
@@ -157,6 +153,6 @@ Authorization: Bearer YOUR_TOKEN
 ## Production safety notes
 
 - Copy `frontend/.env.example` to `frontend/.env` and set `VITE_API_URL` to the API URL.
-- Use a JWT secret of at least 32 characters. Browser sessions use an HttpOnly cookie, with the login token kept as a bearer fallback when cross-site cookies are blocked.
+- Use a JWT secret of at least 32 characters. Browser sessions use a Secure, HttpOnly cookie with no browser-accessible bearer-token fallback.
 - Orders reserve inventory through a MongoDB transaction. Production MongoDB must support transactions (MongoDB Atlas replica sets do).
 - Card payment capture is intentionally not implemented yet. Do not fulfil `processing` orders until a signed, idempotent payment-provider webhook is integrated.
