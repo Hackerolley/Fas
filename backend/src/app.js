@@ -63,14 +63,17 @@ app.use(
   })
 );
 
-// Authentication endpoints need a much tighter ceiling than catalogue reads.
-app.use("/api/auth", rateLimit({
+// Only credential-submission endpoints need a tight ceiling. Applying this to
+// /auth/me would count normal session restores and could lock out an admin.
+const authAttemptLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
   standardHeaders: true,
   legacyHeaders: false,
+  skipSuccessfulRequests: true,
   message: { message: "Too many authentication attempts. Please try again later." }
-}));
+});
+app.use(["/api/auth/login", "/api/auth/register"], authAttemptLimiter);
 
 // Keep noisy or abusive clients from overwhelming public API endpoints.
 app.use(

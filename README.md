@@ -59,6 +59,8 @@ GET  /auth/me                        # Returns the currently signed-in user's pr
 PUT  /auth/profile                   # Updates the signed-in user's profile, address, preferences, or password. [Authenticated]
 ```
 
+Failed login and registration attempts are limited to 10 per 15 minutes per IP address. Successful logins and normal session checks do not count toward that limit.
+
 Registration body:
 
 ```json
