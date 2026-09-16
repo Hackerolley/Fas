@@ -34,6 +34,16 @@ npm run dev
 - Frontend: `https://froyalamitystore-nu.vercel.app`
 - Backend API: `http://localhost:5000/api`
 
+### Custom frontend domain (Namecheap)
+
+After connecting your Namecheap domain to the frontend host, configure both deployed services and redeploy them:
+
+1. In the frontend host (for example, Vercel), set `VITE_API_URL` to `https://froyalamitystore.onrender.com/api`.
+2. In the backend host (for example, Render), set `CLIENT_URLS` to `https://froyalamity.com,https://www.froyalamity.com`. Include only hosts that actually serve the storefront.
+3. Keep both services on HTTPS. The API's `froyal_access_token` cookie is `Secure`, `HttpOnly`, and `SameSite=None` for cross-site frontend/API deployments.
+
+Do not use `*` for CORS: credentialed admin requests require an explicit allowed origin.
+
 ## API Reference
 
 Use `http://localhost:5000/api` as the local base URL or `https://froyalamitystore.onrender.com/api` in production. Authentication uses a Secure, HttpOnly `froyal_access_token` cookie; the browser never receives a reusable bearer token.

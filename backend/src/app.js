@@ -33,17 +33,29 @@ app.use(helmet({
 app.use(express.json({ limit: "2mb" }));
 app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
-const allowedOrigins = [
+// CLIENT_URL supports a single storefront host; CLIENT_URLS supports production
+// aliases such as a Namecheap apex domain and its www variant. Origins—not full
+// URLs with paths—are compared so credentialed CORS stays tightly scoped.
+const toOrigin = (value) => {
+  try { return new URL(value.trim()).origin; } catch { return null; }
+};
+const configuredOrigins = [process.env.CLIENT_URL, process.env.CLIENT_URLS]
+  .flatMap((value) => String(value || "").split(","))
+  .map(toOrigin)
+  .filter(Boolean);
+const allowedOrigins = new Set([
   "https://froyalamitystore-nu.vercel.app",
+  "https://froyalamity.com",
+  "https://www.froyalamity.com",
   "http://localhost:5173",
-  process.env.CLIENT_URL
-].filter(Boolean);
+  ...configuredOrigins
+]);
 
 app.use(
   cors({
     origin(origin, callback) {
       // Requests without an Origin header are health checks, server-to-server calls, or same-origin.
-      if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+      if (!origin || allowedOrigins.has(origin)) return callback(null, true);
       return callback(new Error("Origin is not allowed by CORS."));
     },
     credentials: true,
