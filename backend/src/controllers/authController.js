@@ -3,10 +3,13 @@ import generateToken from "../utils/generateToken.js";
 
 const normaliseEmail = (email) => String(email || "").trim().toLowerCase();
 const safeString = (value, max) => typeof value === "string" && value.trim().length > 0 && value.trim().length <= max;
-// The Vercel storefront and Render API are different browser sites. Cross-site
-// sessions require SameSite=None and Secure, even if NODE_ENV was misconfigured.
-const cookieOptions = () => {
-  const secure = process.env.NODE_ENV === "production" || process.env.CLIENT_URL?.startsWith("https://");
+// The storefront and API can live on different hosts. Cookie security must match the
+// actual request origin so local browser sessions work while production cross-site sessions remain protected.
+const cookieOptions = (req = {}) => {
+  const origin = req.headers?.origin || "";
+  const isLocalhost = /https?:\/\/(localhost|127\.0\.0\.1|\[::1\])/.test(origin);
+  const secure = !!origin && origin.startsWith("https://") && !isLocalhost;
+
   return {
     httpOnly: true,
     secure,
@@ -17,18 +20,23 @@ const cookieOptions = () => {
 };
 
 // Keeps the bearer token out of JavaScript-readable browser storage.
-const sendAuthResponse = (res, user, statusCode = 200) => {
+const sendAuthResponse = (req, res, user, statusCode = 200) => {
   const token = generateToken(user._id);
-  res.cookie("froyal_access_token", token, cookieOptions());
-  res.status(statusCode).json({
+  const normalizedRole = user.role || (user.isAdmin ? "admin" : "customer");
+  const payload = {
+    token,
     _id: user._id,
     name: user.name,
     email: user.email,
-    role: user.role,
+    role: normalizedRole,
+    isAdmin: normalizedRole === "admin",
     avatar: user.avatar,
     shippingAddress: user.shippingAddress,
     notificationPreferences: user.notificationPreferences
-  });
+  };
+
+  res.cookie("froyal_access_token", token, cookieOptions(req));
+  res.status(statusCode).json(payload);
 };
 
 // Registers a new customer account.
@@ -47,7 +55,7 @@ export const registerUser = async (req, res, next) => {
     }
 
     const user = await User.create({ name, email, password });
-    sendAuthResponse(res, user, 201);
+    sendAuthResponse(req, res, user, 201);
   } catch (error) {
     next(error);
   }
@@ -62,7 +70,7 @@ export const loginUser = async (req, res, next) => {
     const user = await User.findOne({ email });
 
     if (user && (await user.matchPassword(password))) {
-      return sendAuthResponse(res, user);
+      return sendAuthResponse(req, res, user);
     }
 
     res.status(401);
@@ -73,7 +81,7 @@ export const loginUser = async (req, res, next) => {
 };
 
 export const logoutUser = (req, res) => {
-  const options = cookieOptions();
+  const options = cookieOptions(req);
   delete options.maxAge;
   res.clearCookie("froyal_access_token", options);
   res.status(204).end();
@@ -81,7 +89,12 @@ export const logoutUser = (req, res) => {
 
 // Returns the currently authenticated user's profile.
 export const getMe = async (req, res) => {
-  res.json(req.user);
+  const user = req.user.toObject ? req.user.toObject() : req.user;
+  res.json({
+    ...user,
+    role: user.role || (user.isAdmin ? "admin" : "customer"),
+    isAdmin: user.role === "admin" || user.isAdmin === true
+  });
 };
 
 // Lets a signed-in user update profile basics.
@@ -122,7 +135,7 @@ export const updateProfile = async (req, res, next) => {
     }
 
     const updatedUser = await user.save();
-    sendAuthResponse(res, updatedUser);
+    sendAuthResponse(req, res, updatedUser);
   } catch (error) {
     next(error);
   }

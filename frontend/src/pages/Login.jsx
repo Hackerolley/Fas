@@ -1,6 +1,6 @@
 import { ArrowRight, LockKeyhole, Mail, ShieldCheck } from "lucide-react";
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Button from "../components/Button";
 import CircleLoader from "../components/CircleLoader";
 import { useAuth } from "../context/AuthContext";
@@ -8,6 +8,7 @@ import { useAuth } from "../context/AuthContext";
 // Login page gives returning customers a clear, polished sign-in experience.
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
@@ -17,7 +18,16 @@ const Login = () => {
   const submit = async (event) => {
     event.preventDefault();
     setSaving(true); setError("");
-    try { await login(form.email, form.password); navigate("/account"); }
+    try {
+      const signedInUser = await login(form.email, form.password);
+      const requestedPath = location.state?.from;
+      const destination = typeof requestedPath === "string" && requestedPath.startsWith("/")
+        ? requestedPath
+        : signedInUser.role === "admin" || signedInUser.isAdmin
+          ? "/admin"
+          : "/account";
+      navigate(destination, { replace: true });
+    }
     catch { setError("We could not sign you in. Check your email and password, then try again."); }
     finally { setSaving(false); }
   };

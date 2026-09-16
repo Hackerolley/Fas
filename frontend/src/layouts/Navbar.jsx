@@ -1,6 +1,6 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { ChevronDown, Grid2X2, LogOut, Menu, Search, ShoppingBag, UserRound, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import api from "../api/axios";
@@ -16,13 +16,16 @@ const Navbar = () => {
   const navigate = useNavigate();
   const { totals } = useCart();
   const { user, logout } = useAuth();
-  const links = [
-    ["Shop", "/shop"],
-    ["About", "/about"],
-    ["Blog", "/blog"],
-    ["Home", "/"]
-  ];
-  if (user?.role === "admin") links.splice(3, 0, ["Admin", "/admin"]);
+  const isAdmin = user?.role === "admin" || user?.isAdmin === true;
+  const links = useMemo(() => {
+    const baseLinks = [
+      ["Shop", "/shop"],
+      ["About", "/about"],
+      ["Blog", "/blog"],
+      ["Home", "/"]
+    ];
+    return isAdmin ? [...baseLinks.slice(0, 3), ["Admin", "/admin"], baseLinks[3]] : baseLinks;
+  }, [isAdmin]);
   useEffect(() => { api.get("/categories").then(({ data }) => setCategories(data)).catch(() => setCategories([])); }, []);
   const closeMenus = () => { setOpen(false); setCategoriesOpen(false); setProfileOpen(false); setSearchOpen(false); };
   const submitSearch = (event) => {

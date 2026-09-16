@@ -34,16 +34,129 @@ npm run dev
 - Frontend: `https://froyalamitystore-nu.vercel.app`
 - Backend API: `http://localhost:5000/api`
 
+## API Reference
+
+Use `http://localhost:5000/api` as the local base URL or `https://froyalamitystore.onrender.com/api` in production. Authentication normally uses an HttpOnly `froyal_access_token` cookie; login and registration also return a `token` field as a bearer-token fallback for browsers that block cross-site cookies.
+
+### System and authentication
+
+```text
+GET  /health                         # Checks whether the API is running.
+POST /auth/register                  # Creates a customer account and starts a session.
+POST /auth/login                     # Checks credentials and starts a session.
+POST /auth/logout                    # Clears the current authentication cookie.
+GET  /auth/me                        # Returns the currently signed-in user's profile. [Authenticated]
+PUT  /auth/profile                   # Updates the signed-in user's profile, address, preferences, or password. [Authenticated]
+```
+
+Registration body:
+
+```json
+{
+	"name": "John Doe",
+	"email": "john@example.com",
+	"password": "StrongPassword123"
+}
+```
+
+### Products
+
+```text
+GET    /products                     # Lists public products with optional search, category, featured, paging, and sorting filters.
+GET    /products/:idOrSlug           # Returns one product by MongoDB ID or slug.
+GET    /products/admin/all           # Lists every product, including drafts and archived products. [Admin]
+POST   /products                     # Creates a product. [Admin]
+PUT    /products/:id                 # Updates a product. [Admin]
+DELETE /products/:id                 # Deletes a product. [Admin]
+POST   /products/:id/reviews         # Adds a signed-in customer's product review. [Authenticated]
+```
+
+### Categories
+
+```text
+GET    /categories                   # Lists active product categories for the storefront.
+POST   /categories                   # Creates a category. [Admin]
+PUT    /categories/:id               # Updates a category. [Admin]
+DELETE /categories/:id               # Deletes a category. [Admin]
+```
+
+### Orders
+
+```text
+POST /orders                         # Creates an order for the signed-in customer. [Authenticated]
+GET  /orders/mine                    # Lists the signed-in customer's orders. [Authenticated]
+GET  /orders/:id                     # Returns an order visible to the signed-in customer. [Authenticated]
+GET  /orders                         # Lists all orders for administration. [Admin]
+PUT  /orders/:id/pay                 # Marks an order as paid. [Admin]
+PUT  /orders/:id/deliver             # Marks an order as delivered. [Admin]
+```
+
+### Users
+
+```text
+GET    /users                        # Lists all users without exposing passwords. [Admin]
+GET    /users/:id                    # Returns one user without exposing the password. [Admin]
+PUT    /users/:id                    # Updates an administrator-managed user record. [Admin]
+DELETE /users/:id                    # Deletes a user account. [Admin]
+```
+
+### Image uploads
+
+```text
+POST /uploads/image                  # Uploads one image to Cloudinary; send multipart field `image`. [Admin]
+```
+
+### Blogs
+
+```text
+GET  /blogs                          # Lists published blog posts.
+GET  /blogs/:slug                    # Returns one published blog post by slug.
+POST /blogs/:slug/comments            # Adds a comment to a blog post. [Authenticated]
+```
+
+### Advertisements
+
+```text
+GET /advertisements                  # Lists active advertisements for the storefront.
+```
+
+### Admin dashboard
+
+All `/admin` endpoints require an authenticated user whose database `role` is `admin`.
+
+```text
+GET    /admin/stats                  # Returns dashboard totals for revenue, orders, products, and customers. [Admin]
+GET    /admin/orders                 # Lists all orders with customer details. [Admin]
+GET    /admin/orders/:id             # Returns one order with customer details. [Admin]
+PUT    /admin/orders/:id/status      # Changes an order status and sends configured notifications. [Admin]
+GET    /admin/users                  # Lists all users for the dashboard. [Admin]
+GET    /admin/blogs                  # Lists all blog posts, including unpublished posts. [Admin]
+POST   /admin/blogs                  # Creates a blog post. [Admin]
+PUT    /admin/blogs/:id              # Updates a blog post. [Admin]
+DELETE /admin/blogs/:id              # Deletes a blog post. [Admin]
+GET    /admin/advertisements         # Lists all advertisements for management. [Admin]
+POST   /admin/advertisements         # Creates an advertisement. [Admin]
+PUT    /admin/advertisements/:id     # Updates an advertisement. [Admin]
+DELETE /admin/advertisements/:id     # Deletes an advertisement. [Admin]
+```
+
+For protected Postman requests, first call `/auth/login`, then either keep the returned `froyal_access_token` cookie or copy the returned `token` into an `Authorization` header:
+
+```text
+Authorization: Bearer YOUR_TOKEN
+```
+
 ## Notes
 
 - Cloudinary upload code is prepared as a placeholder utility.
 - Admin routes are protected by auth and admin middleware. Make one account an `admin` in MongoDB before using the dashboard.
+- Create the first admin once with `cd backend` followed by `npm run create:admin`; the command connects to MongoDB, prompts for credentials, and refuses to create a second admin.
 - Customers can save profile, delivery address, notification choices, change password, view order history, and place authenticated orders. The server recalculates prices from products to prevent browser-side price manipulation.
 - The frontend currently uses elegant local demo data when the API is unavailable, so you can preview the UI before connecting MongoDB.
 
 ## Production safety notes
 
 - Copy `frontend/.env.example` to `frontend/.env` and set `VITE_API_URL` to the API URL.
-- Use a JWT secret of at least 32 characters. Browser sessions are stored in HttpOnly cookies rather than localStorage.
+- Use a JWT secret of at least 32 characters. Browser sessions use an HttpOnly cookie, with the login token kept as a bearer fallback when cross-site cookies are blocked.
 - Orders reserve inventory through a MongoDB transaction. Production MongoDB must support transactions (MongoDB Atlas replica sets do).
 - Card payment capture is intentionally not implemented yet. Do not fulfil `processing` orders until a signed, idempotent payment-provider webhook is integrated.
