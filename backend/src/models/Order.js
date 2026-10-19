@@ -41,6 +41,7 @@ const orderSchema = new mongoose.Schema(
       updateTime: String,
       emailAddress: String
     },
+    paystackReference: { type: String, unique: true, sparse: true },
     itemsPrice: { type: Number, required: true, default: 0 },
     taxPrice: { type: Number, required: true, default: 0 },
     shippingPrice: { type: Number, required: true, default: 0 },

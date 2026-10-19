@@ -38,7 +38,7 @@ npm run dev
 
 After connecting your Namecheap domain to the frontend host, configure both deployed services and redeploy them:
 
-1. In the frontend host (for example, Vercel), set `VITE_API_URL` to `https://froyalamitystore.onrender.com/api`.
+1. In the frontend host (for example, Vercel), set `VITE_API_URL` to `/api`. `frontend/vercel.json` proxies this path to the Render API so the HttpOnly session cookie stays same-origin. Redeploy after changing the setting.
 2. In the backend host (for example, Render), set `CLIENT_URLS` to `https://froyalamity.com,https://www.froyalamity.com`. Include only hosts that actually serve the storefront.
 3. Keep both services on HTTPS. The API's `froyal_access_token` cookie is `Secure`, `HttpOnly`, and `SameSite=None` for cross-site frontend/API deployments.
 
@@ -96,11 +96,14 @@ DELETE /categories/:id               # Deletes a category. [Admin]
 
 ```text
 POST /orders                         # Creates an order for the signed-in customer. [Authenticated]
+POST /orders/:id/paystack/initialize # Starts Paystack hosted checkout using server-calculated order total. [Authenticated]
+GET  /orders/paystack/verify        # Verifies a Paystack reference with Paystack and confirms the order. [Authenticated]
 GET  /orders/mine                    # Lists the signed-in customer's orders. [Authenticated]
 GET  /orders/:id                     # Returns an order visible to the signed-in customer. [Authenticated]
 GET  /orders                         # Lists all orders for administration. [Admin]
 PUT  /orders/:id/pay                 # Marks an order as paid. [Admin]
 PUT  /orders/:id/deliver             # Marks an order as delivered. [Admin]
+POST /paystack/webhook                # Receives signed Paystack charge.success events.
 ```
 
 ### Users
@@ -167,4 +170,7 @@ For protected Postman requests, keep the `froyal_access_token` cookie returned b
 - Copy `frontend/.env.example` to `frontend/.env` and set `VITE_API_URL` to the API URL.
 - Use a JWT secret of at least 32 characters. Browser sessions use a Secure, HttpOnly cookie with no browser-accessible bearer-token fallback.
 - Orders reserve inventory through a MongoDB transaction. Production MongoDB must support transactions (MongoDB Atlas replica sets do).
-- Card payment capture is intentionally not implemented yet. Do not fulfil `processing` orders until a signed, idempotent payment-provider webhook is integrated.
+- Paystack hosted checkout is initialized and verified on the backend. Only the Paystack verification/webhook code can mark Paystack orders paid; the browser and admin status editor cannot.
+- Add `PAYSTACK_SECRET_KEY` in `backend/.env` for local development and in the backend host's environment settings in production. Use the Paystack test secret (`sk_test_...`) while testing, then the live secret (`sk_live_...`) for production. Never add either secret to `frontend/.env`, a `VITE_` variable, or source control.
+- This redirect checkout does not require a Paystack public key because the browser does not use the Paystack SDK. Set `PAYSTACK_CURRENCY=NGN` unless your Paystack account and store use a different supported currency. Configure `PAYSTACK_CALLBACK_URL` only when the storefront return URL cannot be inferred from `CLIENT_URLS`/`CLIENT_URL`; it must end in `/payment/verify`.
+- In the Paystack dashboard, set the webhook URL to `https://YOUR_API_HOST/api/paystack/webhook`. Paystack signatures are checked against the raw request body, and successful events are re-verified with Paystack before an order is marked paid.

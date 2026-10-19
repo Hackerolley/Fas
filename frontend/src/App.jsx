@@ -6,6 +6,7 @@ import Shop from "./pages/Shop";
 import ProductDetails from "./pages/ProductDetails";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
+import PaymentVerify from "./pages/PaymentVerify";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Account from "./pages/Account";
@@ -35,6 +36,7 @@ const App = () => {
         <Route path="/products/:idOrSlug" element={<ProductDetails />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<RequireAuth><Checkout /></RequireAuth>} />
+        <Route path="/payment/verify" element={<RequireAuth><PaymentVerify /></RequireAuth>} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/account" element={<RequireAuth><Account /></RequireAuth>} />

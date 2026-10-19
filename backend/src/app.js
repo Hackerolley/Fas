@@ -14,6 +14,7 @@ import { errorHandler, notFound } from "./middleware/errorMiddleware.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import blogRoutes from "./routes/blogRoutes.js";
 import advertisementRoutes from "./routes/advertisementRoutes.js";
+import { handlePaystackWebhook } from "./controllers/paystackController.js";
 
 // Create the Express app in its own file so tests can import it without starting a server.
 const app = express();
@@ -30,6 +31,8 @@ app.use(helmet({
     }
   }
 }));
+// Preserve the exact bytes for Paystack's HMAC signature check.
+app.post("/api/paystack/webhook", express.raw({ type: "application/json", limit: "256kb" }), handlePaystackWebhook);
 app.use(express.json({ limit: "2mb" }));
 app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 

@@ -121,7 +121,7 @@ export const updateOrderStatus = async (req, res) => {
 
 
     const allowedTransitions = {
-      processing: ["paid", "cancelled"],
+      processing: ["cancelled"],
       paid: ["shipped", "cancelled"],
       shipped: ["delivered"],
       delivered: [],
@@ -147,7 +147,6 @@ export const updateOrderStatus = async (req, res) => {
 
     const updates = { status };
     if (status === "delivered") { updates.isDelivered = true; updates.deliveredAt = new Date(); }
-    if (status === "paid") { updates.isPaid = true; updates.paidAt = new Date(); }
 
     // Compare-and-set prevents two admins from processing the same transition twice.
     const updatedOrder = await Order.findOneAndUpdate(

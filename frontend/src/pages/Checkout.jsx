@@ -7,28 +7,39 @@ import { useAuth } from "../context/AuthContext";
 
 // Checkout page collects shipping details and posts an order to the API.
 const Checkout = () => {
-  const { items, totals, clearCart } = useCart();
+  const { items } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [message, setMessage] = useState("");
+  const [pendingOrderId, setPendingOrderId] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const [shipping, setShipping] = useState(user?.shippingAddress || { fullName: "", address: "", city: "", postalCode: "", country: "", phone: "" });
 
   const submitOrder = async (event) => {
     event.preventDefault();
     if (!user) { navigate("/login"); return; }
-    if (!items.length) { setMessage("Your cart is empty."); return; }
+    if (!pendingOrderId && !items.length) { setMessage("Your cart is empty."); return; }
     const orderItems = items.map((item) => ({ product: item._id, name: item.name, qty: item.qty, image: item.images?.[0]?.url, price: item.price }));
 
+    setSubmitting(true);
+    setMessage("");
     try {
-      await api.post("/orders", {
-        orderItems,
-        shippingAddress: shipping,
-        paymentMethod: "Card",
-      });
-      clearCart();
-      setMessage("Order placed successfully. You can track it from your account.");
+      let orderId = pendingOrderId;
+      if (!orderId) {
+        const { data: order } = await api.post("/orders", {
+          orderItems,
+          shippingAddress: shipping,
+          paymentMethod: "Paystack",
+        });
+        orderId = order._id;
+        setPendingOrderId(orderId);
+      }
+      const { data: payment } = await api.post(`/orders/${orderId}/paystack/initialize`);
+      window.location.assign(payment.authorizationUrl);
     } catch (error) {
       setMessage(error.response?.data?.message || "We could not place your order. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -48,7 +59,8 @@ const Checkout = () => {
             />
           </label>
         ))}
-        <Button type="submit" className="mt-2">Place order</Button>
+        <p className="rounded-lg bg-pearl p-3 text-sm text-ink/70">You’ll complete your card payment securely on Paystack. Your order total is confirmed by the store server.</p>
+        <Button type="submit" disabled={submitting} className="mt-2">{submitting ? "Preparing secure payment…" : pendingOrderId ? "Retry Paystack checkout" : "Continue to Paystack"}</Button>
         {message && <p className="rounded-lg bg-pearl p-3 text-sm font-semibold text-moss">{message}</p>}
       </form>
     </section>

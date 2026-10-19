@@ -22,7 +22,7 @@ export const createOrder = async (req, res, next) => {
     if (!shippingAddress || typeof shippingAddress !== "object" || addressFields.some((field) => typeof shippingAddress[field] !== "string" || !shippingAddress[field].trim() || shippingAddress[field].length > 160)) {
       res.status(400); throw new Error("A complete shipping address is required.");
     }
-    if (!["Card", "Cash on delivery"].includes(paymentMethod)) { res.status(400); throw new Error("Unsupported payment method."); }
+    if (!["Paystack", "Cash on delivery"].includes(paymentMethod)) { res.status(400); throw new Error("Unsupported payment method."); }
 
     const requestedQuantities = new Map();
     for (const item of orderItems) {
@@ -102,28 +102,6 @@ export const getOrders = async (req, res, next) => {
   try {
     const orders = await Order.find({}).populate("user", "name email").sort("-createdAt");
     res.json(orders);
-  } catch (error) {
-    next(error);
-  }
-};
-
-// Marks an order as paid after a future payment provider confirms payment.
-export const updateOrderToPaid = async (req, res, next) => {
-  try {
-    const order = await Order.findById(req.params.id);
-
-    if (!order) {
-      res.status(404);
-      throw new Error("Order not found.");
-    }
-
-    order.isPaid = true;
-    order.paidAt = Date.now();
-    order.status = "paid";
-    order.paymentResult = req.body.paymentResult || {};
-
-    const updatedOrder = await order.save();
-    res.json(updatedOrder);
   } catch (error) {
     next(error);
   }
